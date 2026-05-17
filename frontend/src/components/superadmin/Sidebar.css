@@ -1,0 +1,132 @@
+/* Superadmin Sidebar */
+.sa-sidebar {
+  display: none;
+  width: 72px;
+  background-color: #141416;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 0;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+  .sa-sidebar {
+    display: flex;
+  }
+}
+
+.sa-sidebar__top {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sa-sidebar__logo {
+  padding: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.sa-logo-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+}
+
+.sa-nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  border-radius: 12px;
+  color: #6b7280;
+  transition: all 0.2s ease;
+}
+
+.sa-nav-link:hover {
+  background-color: rgba(131, 184, 34, 0.1);
+  color: #83B822;
+}
+
+.sa-nav-link--active {
+  background-color: rgba(131, 184, 34, 0.15);
+  color: #83B822;
+}
+
+.sa-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  border-radius: 12px;
+  background: none;
+  border: none;
+  color: #ef4444;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sa-logout-btn:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+/* Mobile Bottom Nav */
+.sa-mobile-nav {
+  display: flex;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #141416;
+  z-index: 50;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+@media (min-width: 768px) {
+  .sa-mobile-nav {
+    display: none;
+  }
+}
+
+.sa-mobile-nav__items {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+  padding: 0.5rem 0;
+}
+
+.sa-mobile-nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.4rem;
+  color: #6b7280;
+  font-size: 0.65rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.sa-mobile-nav-link--active {
+  color: #83B822;
+}
+
+.sa-mobile-nav-link:hover {
+  color: #83B822;
+}
+
+.sa-mobile-logout {
+  color: #ef4444;
+}
+
+.sa-mobile-logout:hover {
+  color: #dc2626;
+}

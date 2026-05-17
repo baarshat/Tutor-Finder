@@ -1,0 +1,79 @@
+:root {
+  font-family: 'Roboto Flex', system-ui, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* Theme Colors from Stitch Design System */
+  --primary: #83B822;
+  --primary-hover: #71a31c;
+  --secondary: #5722B8;
+  --accent: #5722B8;
+  --text: #141416;
+  --background: #FFFFFF;
+  --surface: #fcf8fb;
+  --tertiary: #F4F7ED;
+  --border: #e5e7eb;
+
+  /* Elevation: Zero-Blur Hard Offsets */
+  --shadow-hard: 10px 10px 0px rgba(131, 184, 34, 0.15);
+  --shadow-hard-secondary: 10px 10px 0px rgba(87, 34, 184, 0.1);
+  --shadow-hard-hover: 4px 4px 0px rgba(131, 184, 34, 0.15);
+
+  color: var(--text);
+  background-color: var(--background);
+
+  font-synthesize: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 320px;
+  min-height: 100vh;
+  background-color: var(--background);
+}
+
+h1, h2, h3, p {
+  margin: 0;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* Base Typography Scale */
+h1 { font-size: 48px; font-weight: 700; line-height: 56px; letter-spacing: -0.01em; }
+h2 { font-size: 36px; font-weight: 700; line-height: 44px; }
+h3 { font-size: 24px; font-weight: 600; line-height: 32px; }
+p { font-size: 18px; font-weight: 400; line-height: 28px; }
+
+/* Alert Styles */
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.alert-error {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #fecaca;
+}
+
+.alert-success {
+  background-color: #dcfce7;
+  color: #15803d;
+  border: 1px solid #bbf7d0;
+}

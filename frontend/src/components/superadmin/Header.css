@@ -1,0 +1,52 @@
+.sa-header {
+  background-color: #141416;
+  height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.sa-header__kicker {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #83B822;
+  margin-bottom: 0.15rem;
+}
+
+.sa-header__title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin: 0;
+}
+
+.sa-header__actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sa-header__icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  border: none;
+  color: #9ca3af;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.sa-header__icon-btn:hover {
+  background: rgba(131, 184, 34, 0.1);
+  color: #83B822;
+}

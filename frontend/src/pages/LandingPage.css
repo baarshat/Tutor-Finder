@@ -1,0 +1,259 @@
+.landing-page {
+  display: flex;
+  flex-direction: column;
+}
+
+.section-header {
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto 60px;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.section-header h2 {
+  font-size: 48px;
+  color: var(--text);
+}
+
+.section-header p {
+  font-size: 1.1rem;
+  color: #6b7280;
+}
+
+/* Hero Section */
+.hero-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  padding: 120px 2rem;
+  max-width: 1280px;
+  margin: 0 auto;
+  align-items: center;
+}
+
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.hero-content h1 {
+  font-size: 64px;
+  line-height: 72px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--text);
+}
+
+.hero-content p {
+  font-size: 18px;
+  color: #4b5563;
+  line-height: 28px;
+}
+
+.hero-cta {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.hero-image img {
+  width: 100%;
+  height: auto;
+  border-radius: 24px;
+  box-shadow: var(--shadow-hard);
+  border: 1px solid var(--border);
+}
+
+/* Features Section */
+.features-section {
+  background-color: var(--tertiary);
+  padding: 100px 2rem;
+}
+
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.feature-card {
+  background: var(--background);
+  padding: 40px 32px;
+  border-radius: 24px;
+  box-shadow: var(--shadow-hard);
+  border: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  transition: all 0.3s ease;
+}
+
+.feature-card:hover {
+  transform: translate(6px, 6px);
+  box-shadow: var(--shadow-hard-hover);
+}
+
+.feature-icon {
+  background-color: rgba(131, 184, 34, 0.1);
+  padding: 1rem;
+  border-radius: 12px;
+  display: inline-flex;
+  width: fit-content;
+}
+
+.feature-card h3 {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.feature-card p {
+  color: #6b7280;
+  font-size: 16px;
+  line-height: 1.6;
+}
+
+/* How It Works */
+.how-it-works {
+  padding: 100px 2rem;
+  background-color: var(--background);
+}
+
+.steps-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 3rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 2rem;
+  position: relative;
+}
+
+.step-number {
+  width: 48px;
+  height: 48px;
+  background-color: var(--secondary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 1.5rem;
+  box-shadow: 4px 4px 0px rgba(87, 34, 184, 0.2);
+}
+
+.step h3 {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.step p {
+  color: #6b7280;
+}
+
+/* Featured Tutors */
+.featured-tutors {
+  padding: 100px 2rem;
+  background-color: var(--tertiary);
+}
+
+.featured-tutors .tutors-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.view-all-container {
+  margin-top: 60px;
+  display: flex;
+  justify-content: center;
+}
+
+/* Become Tutor Section */
+.become-tutor-section {
+  padding: 100px 2rem;
+  background-color: var(--background);
+}
+
+.promo-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  align-items: center;
+}
+
+.promo-image img {
+  width: 100%;
+  height: auto;
+  border-radius: 24px;
+  box-shadow: var(--shadow-hard-secondary);
+  border: 1px solid var(--border);
+}
+
+.promo-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.tutor-benefits {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+}
+
+.benefit-item {
+  display: flex;
+  gap: 1rem;
+}
+
+.benefit-item h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.benefit-item p {
+  font-size: 14px;
+  color: #6b7280;
+  line-height: 1.4;
+}
+
+@media (max-width: 1024px) {
+  .hero-section, .promo-section, .steps-container {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 3rem;
+  }
+  .hero-cta {
+    justify-content: center;
+  }
+  .section-header h2, .hero-content h1 {
+    font-size: 40px;
+    line-height: 1.1;
+  }
+  .step {
+    align-items: center;
+  }
+  .tutor-benefits {
+    grid-template-columns: 1fr;
+  }
+  .promo-image {
+    order: 2;
+  }
+}

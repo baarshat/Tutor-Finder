@@ -1,0 +1,53 @@
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.main-content {
+  flex: 1;
+}
+
+/* Button Styles - Stitch "High-Contrast Functionalism" */
+.primary-btn {
+  background-color: var(--primary);
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 9999px; /* Full Pill */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-hard);
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+.primary-btn:hover {
+  transform: translate(6px, 6px);
+  box-shadow: var(--shadow-hard-hover);
+}
+
+.secondary-btn {
+  background-color: transparent;
+  color: var(--secondary);
+  border: 2px solid var(--secondary);
+  padding: 0.75rem 2rem;
+  font-size: 1rem;
+  font-weight: 600;
+  border-radius: 9999px; /* Full Pill */
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: var(--shadow-hard-secondary);
+}
+
+.secondary-btn:hover {
+  transform: translate(6px, 6px);
+  box-shadow: 4px 4px 0px rgba(87, 34, 184, 0.1);
+}
+
+/* Section Spacing */
+section {
+  padding-top: 80px;
+  padding-bottom: 80px;
+}

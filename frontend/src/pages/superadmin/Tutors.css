@@ -1,0 +1,85 @@
+.sa-page {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.sa-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.sa-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px;
+  padding: 0.6rem 1.25rem;
+  box-shadow: 4px 4px 0px rgba(0,0,0,0.05);
+}
+
+.sa-search-bar input {
+  border: none;
+  outline: none;
+  font-size: 0.875rem;
+  color: #141416;
+  width: 220px;
+  background: transparent;
+}
+
+.sa-search-bar input::placeholder {
+  color: #9ca3af;
+}
+
+.sa-action-icons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.sa-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sa-icon-btn--green {
+  background: rgba(131, 184, 34, 0.1);
+  color: #5a8015;
+}
+.sa-icon-btn--green:hover {
+  background: rgba(131, 184, 34, 0.2);
+}
+
+.sa-icon-btn--amber {
+  background: rgba(245, 158, 11, 0.1);
+  color: #b45309;
+}
+.sa-icon-btn--amber:hover {
+  background: rgba(245, 158, 11, 0.2);
+}
+
+.sa-icon-btn--red {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+.sa-icon-btn--red:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.sa-icon-btn--purple {
+  background: rgba(87, 34, 184, 0.1);
+  color: #5722B8;
+}
+.sa-icon-btn--purple:hover {
+  background: rgba(87, 34, 184, 0.2);
+}
