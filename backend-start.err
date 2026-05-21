@@ -1,3 +1,0 @@
-'powershell -noprofile "& {$scriptDir='D:\tutorfinder\'; $script='mvnw.cmd'; icm -ScriptBlock ([Scriptblock]::Create((Get-Content -Raw 'D:\tutorfinder\mvnw.cmd'))) -NoNewScope}"' is not recognized as an internal or external command,
-operable program or batch file.
-Cannot start maven from wrapper  
