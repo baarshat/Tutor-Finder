@@ -1,52 +1,48 @@
+/* Superadmin Header - Clean Light Design inside White Card Panel */
 .sa-header {
-  background-color: #141416;
-  height: 72px;
+  background-color: #ffffff; /* Solid white background inside the panel */
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 2rem;
+  padding: 0 2.5rem;
   position: sticky;
   top: 0;
   z-index: 10;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
-}
-
-.sa-header__kicker {
-  font-size: 0.65rem;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  color: #83B822;
-  margin-bottom: 0.15rem;
+  border-bottom: 1px solid #f3f4f6;
+  border-radius: 40px 0px 0px 0px; /* Perfectly aligns with layout card rounded top-left corner */
 }
 
 .sa-header__title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #ffffff;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #141416; /* Clean solid black */
+  letter-spacing: -0.02em;
   margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 .sa-header__actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
 }
 
 .sa-header__icon-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.05);
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: transparent;
   border: none;
-  color: #9ca3af;
+  color: #141416;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
 
 .sa-header__icon-btn:hover {
   background: rgba(131, 184, 34, 0.1);
   color: #83B822;
+  transform: rotate(30deg);
 }

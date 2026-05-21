@@ -56,13 +56,15 @@ const Navbar = () => {
   return (
     <nav className="navbar">
       <div className="navbar-container">
-        <Link to="/" className="navbar-logo">
-          <img src="/src/public/removebg-logo.png" alt="TutorFinder Logo" />
-          <span>TutorFinder</span>
-        </Link>
-        <div className="navbar-links">
-          <Link to="/" className="nav-link">Home</Link>
-          <Link to="/find-tutors" className="nav-link">Find Tutor</Link>
+        <div className="navbar-left">
+          <Link to="/" className="navbar-logo">
+            <img src="/src/public/removebg-logo.png" alt="TutorFinder Logo" />
+            <span>TutorFinder</span>
+          </Link>
+          <div className="navbar-links">
+            <Link to="/" className="nav-link">Home</Link>
+            <Link to="/find-tutors" className="nav-link">Find Tutor</Link>
+          </div>
         </div>
         <div className="navbar-actions">
           {user ? (
@@ -70,7 +72,6 @@ const Navbar = () => {
               <div className="user-avatar" title={user.name}>
                 {getInitials(user.name)}
               </div>
-              <button className="logout-btn" onClick={confirmLogout}>Log out</button>
             </div>
           ) : (
             <>

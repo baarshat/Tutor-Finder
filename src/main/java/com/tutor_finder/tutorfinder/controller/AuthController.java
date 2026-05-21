@@ -9,6 +9,9 @@ import com.tutor_finder.tutorfinder.model.Role;
 import com.tutor_finder.tutorfinder.repository.StudentProfileRepository;
 import com.tutor_finder.tutorfinder.repository.TutorProfileRepository;
 import com.tutor_finder.tutorfinder.repository.UserRepository;
+import com.tutor_finder.tutorfinder.service.AuthenticationService;
+import com.tutor_finder.tutorfinder.service.JwtService;
+import com.tutor_finder.tutorfinder.service.RefreshTokenService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,15 +29,24 @@ public class AuthController {
     private final TutorProfileRepository tutorProfileRepository;
     private final StudentProfileRepository studentProfileRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthenticationService authenticationService;
+    private final JwtService jwtService;
+    private final RefreshTokenService refreshTokenService;
 
     public AuthController(UserRepository userRepository, 
                           TutorProfileRepository tutorProfileRepository, 
                           StudentProfileRepository studentProfileRepository, 
-                          PasswordEncoder passwordEncoder) {
+                          PasswordEncoder passwordEncoder,
+                          AuthenticationService authenticationService,
+                          JwtService jwtService,
+                          RefreshTokenService refreshTokenService) {
         this.userRepository = userRepository;
         this.tutorProfileRepository = tutorProfileRepository;
         this.studentProfileRepository = studentProfileRepository;
         this.passwordEncoder = passwordEncoder;
+        this.authenticationService = authenticationService;
+        this.jwtService = jwtService;
+        this.refreshTokenService = refreshTokenService;
     }
 
     @PostMapping("/register")
@@ -78,11 +90,22 @@ public class AuthController {
         if (userOpt.isPresent()) {
             User user = userOpt.get();
             if (passwordEncoder.matches(req.getPassword(), user.getPassword())) {
+                var authResponse = authenticationService.authenticate(
+                        com.tutor_finder.tutorfinder.dto.AuthenticationRequest.builder()
+                                .email(req.getEmail())
+                                .password(req.getPassword())
+                                .build()
+                );
+
                 Map<String, Object> response = new HashMap<>();
                 response.put("message", "Login successful");
                 response.put("userId", user.getId());
                 response.put("name", user.getName());
                 response.put("role", user.getRole());
+                response.put("verified", user.isVerified());
+                response.put("accessToken", authResponse.getAccessToken());
+                response.put("refreshToken", authResponse.getRefreshToken());
+                response.put("token", authResponse.getAccessToken());
                 return ResponseEntity.ok(response);
             }
         }

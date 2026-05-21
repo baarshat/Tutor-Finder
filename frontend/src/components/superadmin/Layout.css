@@ -1,7 +1,9 @@
+/* Superadmin Shell Layout - Premium Curved Card Style */
 .sa-layout {
   display: flex;
-  min-height: 100vh;
-  background-color: #141416;
+  min-height: calc(100vh - 73px); /* Accounts for sticky public navbar height */
+  background-color: #E3E5E8; /* Light gray base */
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
 }
 
 .sa-layout__main {
@@ -9,25 +11,47 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  background-color: #E3E5E8;
 }
 
 .sa-layout__content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: #f9fafb;
+  background-color: #ffffff; /* Solid White Card Panel */
   overflow-y: auto;
+  border-radius: 0; /* Perfectly squared and flush with the sidebar */
+  box-shadow: -10px -10px 30px rgba(0, 0, 0, 0.03);
 }
 
 .sa-layout__page {
   flex: 1;
-  padding: 1.5rem;
-  padding-bottom: 80px; /* Space for mobile nav */
+  padding: 1.75rem;
+  padding-bottom: 90px; /* Space for mobile nav */
 }
 
 @media (min-width: 768px) {
   .sa-layout__page {
-    padding: 2.5rem;
-    padding-bottom: 2.5rem;
+    padding: 1.75rem 3rem 3rem 3rem; /* EXACTLY 1.75rem top padding to align with first sidebar icon height */
   }
+}
+
+.sa-layout__page--public {
+  padding: 0 !important;
+}
+
+/* Global Superadmin Page Header & Title vertical alignment */
+.sa-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 50px; /* Perfectly matches the first sidebar icon height (50px) */
+  margin-bottom: 1.25rem !important; /* 20px - matches the sidebar gap, forcing content to start at second icon height (98px) */
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.sa-page-header h1.sa-section-title {
+  margin: 0 !important;
+  line-height: 50px !important; /* Center text vertically with the first sidebar icon */
 }

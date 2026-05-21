@@ -1,46 +1,63 @@
-import React, { useEffect, useState } from 'react';
-import { Trash2, Search } from 'lucide-react';
-import './Tutors.css';
-import '../superadmin/Dashboard.css';
+import React, { useEffect, useState } from "react";
+import { Trash2, Search } from "lucide-react";
+import "./Tutors.css";
+import "../superadmin/Dashboard.css";
 
-const API_BASE = 'http://localhost:8080';
+const API_BASE = "http://localhost:8080";
 
 export default function Students() {
   const [students, setStudents] = useState([]);
-  const [search, setSearch] = useState('');
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
 
-  const token = JSON.parse(localStorage.getItem('user') || '{}')?.token;
-  const headers = { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' };
+  const token = JSON.parse(localStorage.getItem("user") || "{}")?.token;
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "Content-Type": "application/json",
+  };
 
   const fetchStudents = () => {
     setLoading(true);
     fetch(`${API_BASE}/api/students`, { headers })
-      .then(res => res.json())
-      .then(data => { setStudents(Array.isArray(data) ? data : []); setLoading(false); })
+      .then((res) => res.json())
+      .then((data) => {
+        setStudents(Array.isArray(data) ? data : []);
+        setLoading(false);
+      })
       .catch(() => setLoading(false));
   };
 
-  useEffect(() => { fetchStudents(); }, []);
+  useEffect(() => {
+    fetchStudents();
+  }, []);
 
   const handleDelete = (id) => {
-    if (!window.confirm('Are you sure you want to delete this student profile?')) return;
-    fetch(`${API_BASE}/api/students/${id}`, { method: 'DELETE', headers })
+    if (
+      !window.confirm("Are you sure you want to delete this student profile?")
+    )
+      return;
+    fetch(`${API_BASE}/api/students/${id}`, { method: "DELETE", headers })
       .then(() => fetchStudents())
       .catch(console.error);
   };
 
-  const filtered = students.filter(s =>
-    (s.user?.name || '').toLowerCase().includes(search.toLowerCase()) ||
-    (s.user?.email || '').toLowerCase().includes(search.toLowerCase())
+  const filtered = students.filter(
+    (s) =>
+      (s.userName || s.user?.name || "")
+        .toLowerCase()
+        .includes(search.toLowerCase()) ||
+      (s.userEmail || s.user?.email || "")
+        .toLowerCase()
+        .includes(search.toLowerCase()),
   );
 
   return (
     <div className="sa-page">
       <div className="sa-page-header">
         <div>
-          <p className="sa-kicker">Management</p>
-          <h1 className="sa-section-title" style={{ fontSize: '1.5rem' }}>Students</h1>
+          <h1 className="sa-section-title" style={{ fontSize: "1.5rem" }}>
+            Students
+          </h1>
         </div>
         <div className="sa-search-bar">
           <Search size={16} color="#9ca3af" />
@@ -48,12 +65,12 @@ export default function Students() {
             type="text"
             placeholder="Search by name or email..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={(e) => setSearch(e.target.value)}
           />
         </div>
       </div>
 
-      <div className="sa-table-card" style={{ marginTop: '1.5rem' }}>
+      <div className="sa-table-card" style={{ marginTop: "1.5rem" }}>
         <div className="sa-table-wrap">
           <table className="sa-table">
             <thead>
@@ -67,28 +84,40 @@ export default function Students() {
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="5" className="sa-table-empty">Loading...</td></tr>
-              ) : filtered.length === 0 ? (
-                <tr><td colSpan="5" className="sa-table-empty">No students found</td></tr>
-              ) : filtered.map((s, idx) => (
-                <tr key={idx}>
-                  <td><strong>{s.user?.name || '—'}</strong></td>
-                  <td>{s.user?.email || '—'}</td>
-                  <td>{s.user?.phone || '—'}</td>
-                  <td>{s.gradeLevel || '—'}</td>
-                  <td>
-                    <div className="sa-action-icons">
-                      <button
-                        className="sa-icon-btn sa-icon-btn--red"
-                        title="Delete"
-                        onClick={() => handleDelete(s.id)}
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+                <tr>
+                  <td colSpan="5" className="sa-table-empty">
+                    Loading...
                   </td>
                 </tr>
-              ))}
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="sa-table-empty">
+                    No students found
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((s, idx) => (
+                  <tr key={idx}>
+                    <td>
+                      <strong>{s.userName || s.user?.name || "—"}</strong>
+                    </td>
+                    <td>{s.userEmail || s.user?.email || "—"}</td>
+                    <td>{s.userPhone || s.user?.phone || "—"}</td>
+                    <td>{s.currentClass || s.gradeLevel || "—"}</td>
+                    <td>
+                      <div className="sa-action-icons">
+                        <button
+                          className="sa-icon-btn sa-icon-btn--red"
+                          title="Delete"
+                          onClick={() => handleDelete(s.id)}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>

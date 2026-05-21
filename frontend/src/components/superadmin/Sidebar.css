@@ -1,16 +1,18 @@
-/* Superadmin Sidebar */
+/* Superadmin Sidebar - Premium Light Design */
 .sa-sidebar {
   display: none;
-  width: 72px;
-  background-color: #141416;
+  width: 80px;
+  background-color: #E3E5E8;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem 0;
-  height: 100vh;
+  padding: 1.75rem 0;
+  height: calc(100vh - 73px); /* Sit beautifully below sticky public navbar */
   position: sticky;
-  top: 0;
+  top: 73px; /* Heights align with public navbar */
   flex-shrink: 0;
+  border-right: 1px solid rgba(0, 0, 0, 0.05);
+  z-index: 99;
 }
 
 @media (min-width: 768px) {
@@ -23,17 +25,21 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.5rem;
+  gap: 1.25rem;
+  width: 100%;
 }
 
 .sa-sidebar__logo {
   padding: 0.5rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .sa-logo-img {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   object-fit: contain;
 }
 
@@ -41,37 +47,44 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem;
-  border-radius: 12px;
-  color: #6b7280;
-  transition: all 0.2s ease;
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
+  color: #141416; /* Dark black outline icons by default */
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  background-color: transparent;
 }
 
 .sa-nav-link:hover {
   background-color: rgba(131, 184, 34, 0.1);
   color: #83B822;
+  transform: translateY(-2px);
 }
 
 .sa-nav-link--active {
-  background-color: rgba(131, 184, 34, 0.15);
+  background-color: rgba(131, 184, 34, 0.18);
   color: #83B822;
+  box-shadow: 0 4px 12px rgba(131, 184, 34, 0.15);
 }
 
 .sa-logout-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem;
-  border-radius: 12px;
+  width: 50px;
+  height: 50px;
+  border-radius: 14px;
   background: none;
   border: none;
-  color: #ef4444;
+  color: #141416;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.25s ease;
 }
 
 .sa-logout-btn:hover {
   background-color: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  transform: translateY(2px);
 }
 
 /* Mobile Bottom Nav */
@@ -81,9 +94,10 @@
   bottom: 0;
   left: 0;
   right: 0;
-  background-color: #141416;
+  background-color: #E3E5E8;
   z-index: 50;
-  border-top: 1px solid rgba(255,255,255,0.05);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
 }
 
 @media (min-width: 768px) {
@@ -97,22 +111,23 @@
   justify-content: space-around;
   align-items: center;
   width: 100%;
-  padding: 0.5rem 0;
+  padding: 0.6rem 0;
 }
 
 .sa-mobile-nav-link {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.25rem;
   padding: 0.4rem;
-  color: #6b7280;
-  font-size: 0.65rem;
+  color: #4b5563;
+  font-size: 0.7rem;
+  font-weight: 600;
   background: none;
   border: none;
   cursor: pointer;
   text-decoration: none;
-  transition: color 0.2s;
+  transition: all 0.2s ease;
 }
 
 .sa-mobile-nav-link--active {

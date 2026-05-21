@@ -1,24 +1,86 @@
-import React, { useState } from 'react';
-import { Search, SlidersHorizontal } from 'lucide-react';
-import TutorCard from '../components/TutorCard';
-import './FindTutorPage.css';
+import React, { useEffect, useMemo, useState } from "react";
+import { Search, SlidersHorizontal } from "lucide-react";
+import TutorCard from "../components/TutorCard";
+import "./FindTutorPage.css";
 
-const MOCK_TUTORS = [
-  { id: 1, name: 'Sanjay Sharma', subjects: ['Mathematics', 'Physics'], rating: 4.8, reviews: 124, hourlyRate: 800, location: 'Kathmandu' },
-  { id: 2, name: 'Anjali Karki', subjects: ['English', 'Literature'], rating: 4.9, reviews: 89, hourlyRate: 600, location: 'Lalitpur' },
-  { id: 3, name: 'Rabin Shrestha', subjects: ['Chemistry', 'Biology'], rating: 4.7, reviews: 56, hourlyRate: 750, location: 'Bhaktapur' },
-  { id: 4, name: 'Pooja Thapa', subjects: ['Computer Science', 'Programming'], rating: 5.0, reviews: 210, hourlyRate: 1000, location: 'Online' },
-  { id: 5, name: 'Bikash Rai', subjects: ['Economics', 'Accounting'], rating: 4.6, reviews: 45, hourlyRate: 700, location: 'Kathmandu' },
-  { id: 6, name: 'Sunita Gurung', subjects: ['Mathematics', 'Science'], rating: 4.8, reviews: 112, hourlyRate: 650, location: 'Pokhara' },
-];
+const API_BASE = "http://localhost:8080";
 
 const FindTutorPage = () => {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [tutors, setTutors] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
-  const filteredTutors = MOCK_TUTORS.filter(tutor => 
-    tutor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    tutor.subjects.some(sub => sub.toLowerCase().includes(searchTerm.toLowerCase())) ||
-    tutor.location.toLowerCase().includes(searchTerm.toLowerCase())
+  useEffect(() => {
+    let isActive = true;
+
+    const loadTutors = async () => {
+      setLoading(true);
+      setError("");
+      try {
+        const res = await fetch(`${API_BASE}/api/tutors`);
+        if (!res.ok) {
+          throw new Error(`Failed to load tutors: ${res.status}`);
+        }
+        const data = await res.json();
+        if (isActive) {
+          setTutors(Array.isArray(data) ? data : []);
+        }
+      } catch (err) {
+        if (isActive) {
+          setError(err?.message || "Failed to load tutors.");
+          setTutors([]);
+        }
+      } finally {
+        if (isActive) {
+          setLoading(false);
+        }
+      }
+    };
+
+    loadTutors();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  const normalizeSubjects = (subjects) => {
+    if (Array.isArray(subjects)) {
+      return subjects;
+    }
+    if (typeof subjects === "string") {
+      return subjects
+        .split(",")
+        .map((subject) => subject.trim())
+        .filter(Boolean);
+    }
+    return [];
+  };
+
+  const normalizedTutors = useMemo(
+    () =>
+      tutors
+        .filter((t) => (t.status || "").toUpperCase() === "VERIFIED")
+        .map((t) => ({
+          id: t.id,
+          name: t.userName || t.name || "Tutor",
+          subjects: normalizeSubjects(t.subjects),
+          rating: t.rating || 4.8,
+          reviews: t.reviews || 0,
+          hourlyRate: t.hourlyRate || 0,
+          location: t.location || t.serviceArea || "N/A",
+        })),
+    [tutors],
+  );
+
+  const filteredTutors = normalizedTutors.filter(
+    (tutor) =>
+      tutor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      tutor.subjects.some((sub) =>
+        sub.toLowerCase().includes(searchTerm.toLowerCase()),
+      ) ||
+      tutor.location.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   return (
@@ -28,20 +90,24 @@ const FindTutorPage = () => {
         <div className="search-banner-content">
           <div className="search-text">
             <h1>Find Your Perfect Tutor</h1>
-            <p>Search by subject, location, or tutor name to start learning today.</p>
-            
+            <p>
+              Search by subject, location, or tutor name to start learning
+              today.
+            </p>
+
             <div className="search-bar-container">
               <div className="search-input-wrapper">
                 <Search className="search-icon" size={20} color="#9ca3af" />
-                <input 
-                  type="text" 
-                  placeholder="What do you want to learn?" 
+                <input
+                  type="text"
+                  placeholder="What do you want to learn?"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
               <button className="primary-btn search-btn">Search</button>
             </div>
+            {error && <p className="search-error">{error}</p>}
           </div>
           <div className="search-illustration">
             <img src="/src/public/find tutor.png" alt="Find Tutor" />
@@ -57,22 +123,36 @@ const FindTutorPage = () => {
             <h3>Filters</h3>
             <SlidersHorizontal size={20} />
           </div>
-          
+
           <div className="filter-group">
             <h4>Subject</h4>
-            <label className="checkbox-label"><input type="checkbox" /> Mathematics</label>
-            <label className="checkbox-label"><input type="checkbox" /> Science</label>
-            <label className="checkbox-label"><input type="checkbox" /> English</label>
-            <label className="checkbox-label"><input type="checkbox" /> Computer Science</label>
+            <label className="checkbox-label">
+              <input type="checkbox" /> Mathematics
+            </label>
+            <label className="checkbox-label">
+              <input type="checkbox" /> Science
+            </label>
+            <label className="checkbox-label">
+              <input type="checkbox" /> English
+            </label>
+            <label className="checkbox-label">
+              <input type="checkbox" /> Computer Science
+            </label>
           </div>
-          
+
           <div className="filter-group">
             <h4>Location</h4>
-            <label className="checkbox-label"><input type="checkbox" /> Online</label>
-            <label className="checkbox-label"><input type="checkbox" /> Kathmandu</label>
-            <label className="checkbox-label"><input type="checkbox" /> Lalitpur</label>
+            <label className="checkbox-label">
+              <input type="checkbox" /> Online
+            </label>
+            <label className="checkbox-label">
+              <input type="checkbox" /> Kathmandu
+            </label>
+            <label className="checkbox-label">
+              <input type="checkbox" /> Lalitpur
+            </label>
           </div>
-          
+
           <div className="filter-group">
             <h4>Price Range</h4>
             <input type="range" min="0" max="2000" className="price-slider" />
@@ -94,17 +174,20 @@ const FindTutorPage = () => {
               <option>Price: High to Low</option>
             </select>
           </div>
-          
+
           <div className="tutors-grid">
-            {filteredTutors.map(tutor => (
+            {filteredTutors.map((tutor) => (
               <TutorCard key={tutor.id} {...tutor} />
             ))}
           </div>
-          
-          {filteredTutors.length === 0 && (
+
+          {!loading && filteredTutors.length === 0 && (
             <div className="no-results">
               <h3>No tutors found</h3>
-              <p>Try adjusting your search or filters to find what you're looking for.</p>
+              <p>
+                Try adjusting your search or filters to find what you're looking
+                for.
+              </p>
             </div>
           )}
         </main>
