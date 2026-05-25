@@ -9,6 +9,11 @@ export default function Tutors() {
   const [tutors, setTutors] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [documentModal, setDocumentModal] = useState({
+    open: false,
+    url: "",
+    isPdf: false,
+  });
 
   const token = JSON.parse(localStorage.getItem("user") || "{}")?.token;
   const headers = {
@@ -31,7 +36,6 @@ export default function Tutors() {
     fetchTutors();
   }, []);
 
-
   const handleVerify = (id, current) => {
     fetch(`${API_BASE}/api/tutors/${id}/verify`, {
       method: "PUT",
@@ -48,10 +52,6 @@ export default function Tutors() {
     fetch(`${API_BASE}/api/tutors/${id}`, { method: "DELETE", headers })
       .then(() => fetchTutors())
       .catch(console.error);
-  };
-
-  const handleViewDocument = (id) => {
-    setDocumentModalTutorId(id);
   };
 
   const filtered = tutors.filter(
@@ -81,6 +81,28 @@ export default function Tutors() {
         ? "image/jpeg"
         : "application/pdf";
     return `data:${mime};base64,${trimmed}`;
+  };
+
+  const isPdfDocument = (doc) => {
+    if (!doc) return false;
+    const trimmed = String(doc).trim();
+    if (trimmed.startsWith("data:")) {
+      return trimmed.toLowerCase().includes("application/pdf");
+    }
+    return trimmed.startsWith("JVBERi0");
+  };
+
+  const openDocumentModal = (doc) => {
+    const href = getDocumentHref(doc);
+    setDocumentModal({
+      open: true,
+      url: href,
+      isPdf: isPdfDocument(doc),
+    });
+  };
+
+  const closeDocumentModal = () => {
+    setDocumentModal({ open: false, url: "", isPdf: false });
   };
 
   return (
@@ -151,16 +173,15 @@ export default function Tutors() {
                     </td>
                     <td>
                       {t.documentUrl ? (
-                        <a
+                        <button
+                          type="button"
                           className="sa-icon-btn sa-icon-btn--green"
-                          href={getDocumentHref(t.documentUrl)}
-                          target="_blank"
-                          rel="noreferrer"
+                          onClick={() => openDocumentModal(t.documentUrl)}
                           title="View document"
                           style={{ textDecoration: "none", padding: "0 10px" }}
                         >
                           View
-                        </a>
+                        </button>
                       ) : (
                         "—"
                       )}
@@ -200,6 +221,42 @@ export default function Tutors() {
           </table>
         </div>
       </div>
+
+      {documentModal.open && (
+        <div
+          className="sa-modal__overlay"
+          onClick={closeDocumentModal}
+          style={{ zIndex: 50 }}
+        >
+          <div
+            className="sa-modal"
+            onClick={(e) => e.stopPropagation()}
+            style={{ maxWidth: "900px", width: "90%" }}
+          >
+            <h2 className="sa-modal__title">Tutor Document</h2>
+            <div style={{ padding: "12px 0 20px" }}>
+              {documentModal.isPdf ? (
+                <iframe
+                  title="Tutor document"
+                  src={documentModal.url}
+                  style={{ width: "100%", height: "70vh", border: "none" }}
+                />
+              ) : (
+                <img
+                  src={documentModal.url}
+                  alt="Tutor document"
+                  style={{ maxWidth: "100%", maxHeight: "70vh" }}
+                />
+              )}
+            </div>
+            <div className="sa-modal__actions">
+              <button className="sa-modal__cancel" onClick={closeDocumentModal}>
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
