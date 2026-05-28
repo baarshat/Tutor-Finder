@@ -140,6 +140,18 @@ function AppContent() {
 
   const isPublicPage = ["/", "/find-tutors"].includes(location.pathname);
 
+  useEffect(() => {
+  const link = document.createElement('link');
+  link.href = 'https://assets.calendly.com/assets/external/widget.css';
+  link.rel = 'stylesheet';
+  document.head.appendChild(link);
+
+  const script = document.createElement('script');
+  script.src = 'https://assets.calendly.com/assets/external/widget.js';
+  script.async = true;
+  document.body.appendChild(script);
+}, []);
+
   return (
     <div className="app-container">
       {!hideNavbarFooter && <Navbar />}
