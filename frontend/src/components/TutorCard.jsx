@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { Star, MapPin, BookOpen } from "lucide-react";
-import { PopupButton } from "react-calendly";
+import BookingModal from "./BookingModal";
 import "./TutorCard.css";
 
 const TutorCard = ({
+  id,
   name,
   subjects,
   rating,
@@ -11,7 +12,19 @@ const TutorCard = ({
   hourlyRate,
   location,
   image,
+  canBook = true,
 }) => {
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
+
+  const handleOpenBooking = () => {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      window.location.href = "/login";
+      return;
+    }
+    setIsBookingOpen(true);
+  };
+
   return (
     <div className="tutor-card">
       <div className="tutor-header">
@@ -54,15 +67,17 @@ const TutorCard = ({
 
         <button
           className="primary-btn"
-          onClick={() =>
-            window.Calendly.initPopupWidget({
-              url: "https://calendly.com/sthabarshat/30min",
-            })
-          }
+          onClick={handleOpenBooking}
+          disabled={!canBook}
         >
-          Book Now
+          {canBook ? "Book Now" : "Unavailable"}
         </button>
       </div>
+      <BookingModal
+        tutor={{ id, name, subjects, location, hourlyRate }}
+        isOpen={isBookingOpen}
+        onClose={() => setIsBookingOpen(false)}
+      />
     </div>
   );
 };

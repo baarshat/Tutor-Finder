@@ -20,12 +20,19 @@
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: var(--shadow-hard);
-  border: 1px solid rgba(0,0,0,0.1);
+  border: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .primary-btn:hover {
   transform: translate(6px, 6px);
   box-shadow: var(--shadow-hard-hover);
+}
+
+.primary-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 .secondary-btn {

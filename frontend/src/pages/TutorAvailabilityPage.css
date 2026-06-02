@@ -1,0 +1,79 @@
+.availability-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+}
+
+.availability-header {
+  margin-bottom: 2rem;
+}
+
+.availability-header h2 {
+  margin-bottom: 0.5rem;
+}
+
+.availability-header p {
+  color: #64748b;
+}
+
+.availability-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-hard);
+}
+
+.availability-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.availability-day {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+}
+
+.availability-time {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.availability-time select {
+  padding: 0.4rem 0.6rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.availability-gap label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  font-weight: 600;
+}
+
+.availability-gap input {
+  max-width: 150px;
+  padding: 0.4rem 0.6rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+.availability-error {
+  color: #dc2626;
+  font-weight: 500;
+}
+
+.availability-success {
+  color: #16a34a;
+  font-weight: 500;
+}

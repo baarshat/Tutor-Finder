@@ -31,6 +31,8 @@ import SuperadminHistory from "./pages/superadmin/History";
 import TutorVerificationPage from "./pages/TutorVerificationPage";
 import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import PaymentFailurePage from "./pages/PaymentFailurePage";
+import BookingsDashboardPage from "./pages/BookingsDashboardPage";
+import TutorAvailabilityPage from "./pages/TutorAvailabilityPage";
 
 // CSS for superadmin layout
 import "./components/superadmin/Layout.css";
@@ -83,6 +85,12 @@ function AppContent() {
             ...(token ? { Authorization: `Bearer ${token}` } : {}),
           },
         });
+
+        if (res.status === 401 || res.status === 403) {
+          localStorage.clear();
+          window.location.href = "/login";
+          return;
+        }
 
         if (!res.ok) {
           if (isActive) {
@@ -140,18 +148,6 @@ function AppContent() {
 
   const isPublicPage = ["/", "/find-tutors"].includes(location.pathname);
 
-  useEffect(() => {
-  const link = document.createElement('link');
-  link.href = 'https://assets.calendly.com/assets/external/widget.css';
-  link.rel = 'stylesheet';
-  document.head.appendChild(link);
-
-  const script = document.createElement('script');
-  script.src = 'https://assets.calendly.com/assets/external/widget.js';
-  script.async = true;
-  document.body.appendChild(script);
-}, []);
-
   return (
     <div className="app-container">
       {!hideNavbarFooter && <Navbar />}
@@ -168,6 +164,14 @@ function AppContent() {
                     {/* Public Routes */}
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/find-tutors" element={<FindTutorPage />} />
+                    <Route
+                      path="/bookings"
+                      element={<BookingsDashboardPage />}
+                    />
+                    <Route
+                      path="/tutor/availability"
+                      element={<TutorAvailabilityPage />}
+                    />
 
                     {/* Superadmin Routes */}
                     <Route
@@ -217,6 +221,8 @@ function AppContent() {
             <Route path="/find-tutors" element={<FindTutorPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/bookings" element={<LoginPage />} />
+            <Route path="/tutor/availability" element={<LoginPage />} />
 
             {/* Superadmin Routes */}
             <Route

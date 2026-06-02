@@ -1,0 +1,207 @@
+.booking-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 200;
+  padding: 2rem;
+}
+
+.booking-modal {
+  background: var(--background);
+  border-radius: 20px;
+  width: min(1100px, 100%);
+  max-height: 90vh;
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  box-shadow: var(--shadow-hard);
+  border: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.booking-modal__close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.booking-modal__details {
+  padding: 2.5rem;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.booking-modal__details h2 {
+  font-size: 28px;
+}
+
+.booking-modal__subtitle {
+  color: #64748b;
+  margin-bottom: 1rem;
+}
+
+.booking-modal__detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #334155;
+}
+
+.booking-modal__form {
+  padding: 2.5rem;
+  overflow-y: auto;
+}
+
+.booking-modal__success {
+  background: #dcfce7;
+  border: 1px solid #bbf7d0;
+  padding: 1.5rem;
+  border-radius: 12px;
+}
+
+.booking-modal__calendar {
+  margin-bottom: 2rem;
+}
+
+.calendar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+.calendar-header button {
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.2rem;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 0.5rem;
+}
+
+.calendar-cell {
+  text-align: center;
+  padding: 0.5rem 0;
+  font-size: 0.9rem;
+}
+
+.calendar-cell--day {
+  font-weight: 600;
+  color: #64748b;
+}
+
+.calendar-cell--date {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  background: #f8fafc;
+}
+
+.calendar-cell--date.is-available {
+  border-color: var(--primary);
+  color: var(--text);
+}
+
+.calendar-cell--date.is-selected {
+  background: var(--primary);
+  color: white;
+}
+
+.calendar-cell--date:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: #f1f5f9;
+}
+
+.booking-modal__slots {
+  margin-bottom: 2rem;
+}
+
+.slot-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.75rem;
+}
+
+.slot-button {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.6rem 0.8rem;
+  background: white;
+  cursor: pointer;
+  font-weight: 600;
+  color: #334155;
+}
+
+.slot-button.is-active {
+  background: var(--secondary);
+  color: white;
+  border-color: var(--secondary);
+}
+
+.booking-modal__form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.booking-modal__form-fields .form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.booking-modal__form-fields label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: white;
+  border: 1px solid var(--border);
+  padding: 0.5rem 0.75rem;
+  border-radius: 12px;
+}
+
+.booking-modal__form-fields input,
+.booking-modal__form-fields textarea {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 0.95rem;
+  background: transparent;
+}
+
+.booking-modal__form-fields textarea {
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0.75rem;
+  resize: vertical;
+}
+
+.form-error {
+  color: #dc2626;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 900px) {
+  .booking-modal {
+    grid-template-columns: 1fr;
+  }
+  .booking-modal__details {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+}
