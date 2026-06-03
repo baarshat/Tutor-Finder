@@ -20,13 +20,17 @@ public class Booking {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "tutor_profile_id", nullable = false)
     private TutorProfile tutorProfile;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "student_user_id", nullable = false)
     private User student;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "student_profile_id", nullable = false)
+    private StudentProfile studentProfile;
 
     @Column(nullable = false)
     private String studentName;

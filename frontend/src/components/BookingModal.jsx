@@ -71,7 +71,7 @@ const BookingModal = ({ tutor, isOpen, onClose }) => {
     : tutor?.subjects;
 
   const [availability, setAvailability] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedTime, setSelectedTime] = useState(null);
@@ -92,6 +92,7 @@ const BookingModal = ({ tutor, isOpen, onClose }) => {
       setSelectedTime(null);
       setSuccessMessage("");
       setError("");
+      setLoading(true);
       return;
     }
 
@@ -330,12 +331,12 @@ const BookingModal = ({ tutor, isOpen, onClose }) => {
                           isAvailable ? " is-available" : ""
                         }${isSelected ? " is-selected" : ""}`}
                         disabled={isPast || !isAvailable}
-                          onClick={() => {
-                            setSelectedDate(dateString);
-                            setSelectedTime(null);
-                            setError("");
-                          }}
-                        >
+                        onClick={() => {
+                          setSelectedDate(dateString);
+                          setSelectedTime(null);
+                          setError("");
+                        }}
+                      >
                         {date.getDate()}
                       </button>
                     );

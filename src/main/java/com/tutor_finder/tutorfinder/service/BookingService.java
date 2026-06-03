@@ -4,6 +4,7 @@ import com.tutor_finder.tutorfinder.dto.AvailabilityDateSlots;
 import com.tutor_finder.tutorfinder.dto.BookingRequest;
 import com.tutor_finder.tutorfinder.model.*;
 import com.tutor_finder.tutorfinder.repository.BookingRepository;
+import com.tutor_finder.tutorfinder.repository.StudentProfileRepository;
 import com.tutor_finder.tutorfinder.repository.TutorProfileRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
@@ -27,6 +28,7 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final TutorProfileRepository tutorProfileRepository;
+    private final StudentProfileRepository studentProfileRepository;
     private final AvailabilityService availabilityService;
     private final NotificationService notificationService;
 
@@ -46,6 +48,13 @@ public class BookingService {
 
         TutorProfile tutorProfile = tutorProfileRepository.findById(request.getTutorProfileId())
                 .orElseThrow(() -> new NoSuchElementException("Tutor profile not found"));
+
+        StudentProfile studentProfile = studentProfileRepository.findByUserId(student.getId())
+                .orElseGet(() -> {
+                    StudentProfile profile = new StudentProfile();
+                    profile.setUser(student);
+                    return studentProfileRepository.save(profile);
+                });
 
         LocalDateTime startTime = LocalDateTime.parse(request.getStartTime());
         LocalDateTime endTime = LocalDateTime.parse(request.getEndTime());
@@ -76,6 +85,7 @@ public class BookingService {
         Booking booking = Booking.builder()
                 .tutorProfile(tutorProfile)
                 .student(student)
+                .studentProfile(studentProfile)
                 .studentName(studentName)
                 .studentEmail(studentEmail)
                 .startTime(startTime)

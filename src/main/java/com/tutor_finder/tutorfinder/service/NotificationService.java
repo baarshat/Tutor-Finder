@@ -21,6 +21,7 @@ public class NotificationService {
     public Notification create(User user, String message, NotificationType type) {
         Notification notification = Notification.builder()
                 .user(user)
+                .title(type != null ? type.name() : NotificationType.GENERAL.name())
                 .message(message)
                 .type(type == null ? NotificationType.GENERAL : type)
                 .build();

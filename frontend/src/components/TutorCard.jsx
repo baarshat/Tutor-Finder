@@ -1,18 +1,11 @@
 import React, { useState } from "react";
+import ReactDOM from "react-dom";
 import { Star, MapPin, BookOpen } from "lucide-react";
 import BookingModal from "./BookingModal";
 import "./TutorCard.css";
 
 const TutorCard = ({
-  id,
-  name,
-  subjects,
-  rating,
-  reviews,
-  hourlyRate,
-  location,
-  image,
-  canBook = true,
+  id, name, subjects, rating, reviews, hourlyRate, location, image, canBook = true,
 }) => {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
@@ -35,10 +28,8 @@ const TutorCard = ({
             <div className="avatar-placeholder">{name.charAt(0)}</div>
           )}
         </div>
-
         <div className="tutor-info">
           <h3>{name}</h3>
-
           <div className="tutor-rating">
             <Star size={16} fill="#fbbf24" color="#fbbf24" />
             <span>{rating}</span>
@@ -52,7 +43,6 @@ const TutorCard = ({
           <BookOpen size={18} color="var(--primary)" />
           <span>{subjects.join(", ")}</span>
         </div>
-
         <div className="detail-item">
           <MapPin size={18} color="var(--primary)" />
           <span>{location}</span>
@@ -64,7 +54,6 @@ const TutorCard = ({
           <span className="price">NPR {hourlyRate}</span>
           <span className="unit">/hr</span>
         </div>
-
         <button
           className="primary-btn"
           onClick={handleOpenBooking}
@@ -73,11 +62,16 @@ const TutorCard = ({
           {canBook ? "Book Now" : "Unavailable"}
         </button>
       </div>
-      <BookingModal
-        tutor={{ id, name, subjects, location, hourlyRate }}
-        isOpen={isBookingOpen}
-        onClose={() => setIsBookingOpen(false)}
-      />
+
+      {/* Portal renders the modal directly on document.body, escaping tutor-card's CSS */}
+      {isBookingOpen && ReactDOM.createPortal(
+        <BookingModal
+          tutor={{ id, name, subjects, location, hourlyRate }}
+          isOpen={isBookingOpen}
+          onClose={() => setIsBookingOpen(false)}
+        />,
+        document.body
+      )}
     </div>
   );
 };
