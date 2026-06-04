@@ -62,12 +62,6 @@ export default function PaymentSuccessPage() {
           throw new Error(await res.text());
         }
 
-        const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-        if (currentUser && Object.keys(currentUser).length > 0) {
-          const updatedUser = { ...currentUser, verified: true };
-          localStorage.setItem("user", JSON.stringify(updatedUser));
-        }
-
         setStatus("success");
         setMessage(
           `Payment successful via ${method === "khalti" ? "Khalti" : "eSewa"}! Your profile is now under review by the administrator.`,

@@ -43,6 +43,15 @@ public class TutorProfile {
     @Column(columnDefinition = "LONGTEXT")
     private String documentUrl; // Base64 document or certificate path
 
+    @Column(columnDefinition = "LONGTEXT")
+    private String tutorImageUrl; // Tutor profile image
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String certificationDocumentUrl; // Teaching certificate/degree
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String citizenshipDocumentUrl; // Citizenship/NID document
+
     private String mapLocation; // Google Map coordinate/address embed
 
     @Column(length = 20)

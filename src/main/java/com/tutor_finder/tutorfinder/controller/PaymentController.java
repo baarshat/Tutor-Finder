@@ -6,7 +6,6 @@ import com.tutor_finder.tutorfinder.model.TutorProfile;
 import com.tutor_finder.tutorfinder.model.User;
 import com.tutor_finder.tutorfinder.repository.PaymentRepository;
 import com.tutor_finder.tutorfinder.repository.TutorProfileRepository;
-import com.tutor_finder.tutorfinder.repository.UserRepository;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,7 +27,6 @@ public class PaymentController {
 
     private final PaymentRepository paymentRepository;
     private final TutorProfileRepository tutorProfileRepository;
-    private final UserRepository userRepository;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Value("${khalti.initiate-url:https://dev.khalti.com/api/v2/epayment/initiate/}")
@@ -52,6 +50,9 @@ public class PaymentController {
         private Integer experienceYears;
         private String location;
         private String serviceArea;
+        private String tutorImageUrl;
+        private String certificationDocumentUrl;
+        private String citizenshipDocumentUrl;
         private String documentUrl;
         private String mapLocation;
         private Double amount;
@@ -67,6 +68,19 @@ public class PaymentController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
         }
 
+        if (request.getExperienceYears() == null || request.getExperienceYears() < 0) {
+            return ResponseEntity.badRequest().body("Experience years must be zero or greater");
+        }
+        if (request.getAmount() == null || request.getAmount() <= 0) {
+            return ResponseEntity.badRequest().body("Invalid payment amount");
+        }
+        if (isBlank(request.getTutorImageUrl())
+                || isBlank(request.getCertificationDocumentUrl())
+                || isBlank(request.getCitizenshipDocumentUrl())) {
+            return ResponseEntity.badRequest()
+                    .body("Tutor image, certification document, and citizenship/NID document are required");
+        }
+
         try {
             // 1. Get or create TutorProfile associated with the logged-in user
             TutorProfile tutorProfile = tutorProfileRepository.findByUserId(user.getId())
@@ -79,7 +93,13 @@ public class PaymentController {
             tutorProfile.setExperienceYears(request.getExperienceYears());
             tutorProfile.setLocation(request.getLocation());
             tutorProfile.setServiceArea(request.getServiceArea());
-            tutorProfile.setDocumentUrl(request.getDocumentUrl());
+            tutorProfile.setTutorImageUrl(request.getTutorImageUrl());
+            tutorProfile.setCertificationDocumentUrl(request.getCertificationDocumentUrl());
+            tutorProfile.setCitizenshipDocumentUrl(request.getCitizenshipDocumentUrl());
+            tutorProfile.setDocumentUrl(
+                    !isBlank(request.getDocumentUrl())
+                            ? request.getDocumentUrl()
+                            : request.getCitizenshipDocumentUrl());
             tutorProfile.setMapLocation(request.getMapLocation());
             tutorProfile.setSubscriptionActive(false);
             tutorProfile.setStatus("PENDING");
@@ -258,10 +278,6 @@ public class PaymentController {
             tutorProfile.setStatus("PENDING"); // Stays pending for Superadmin physical verification
             tutorProfileRepository.save(tutorProfile);
 
-                User paymentUser = payment.getUser();
-                paymentUser.setVerified(true);
-                userRepository.save(paymentUser);
-
             return ResponseEntity.ok(Map.of("message", "Payment successfully verified and profile submitted!"));
 
         } catch (Exception e) {
@@ -354,13 +370,14 @@ public class PaymentController {
             tutorProfile.setStatus("PENDING");
             tutorProfileRepository.save(tutorProfile);
 
-                user.setVerified(true);
-                userRepository.save(user);
-
             return ResponseEntity.ok(Map.of("message", "Payment successfully verified and profile submitted!", "method", "KHALTI"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Verification error: " + e.getMessage());
         }
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 }

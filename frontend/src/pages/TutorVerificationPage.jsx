@@ -18,8 +18,12 @@ export default function TutorVerificationPage() {
     serviceArea: "",
     mapLocation: "",
   });
-  const [documentBase64, setDocumentBase64] = useState(null);
-  const [fileName, setFileName] = useState("");
+  const [tutorImageBase64, setTutorImageBase64] = useState(null);
+  const [tutorImageName, setTutorImageName] = useState("");
+  const [certificationBase64, setCertificationBase64] = useState(null);
+  const [certificationName, setCertificationName] = useState("");
+  const [citizenshipBase64, setCitizenshipBase64] = useState(null);
+  const [citizenshipName, setCitizenshipName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [profileStatus, setProfileStatus] = useState("LOADING");
@@ -88,10 +92,14 @@ export default function TutorVerificationPage() {
   }, []);
 
   const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    if (name === "experienceYears" && value !== "" && Number(value) < 0) {
+      return;
+    }
+    setFormData({ ...formData, [name]: value });
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = (e, setBase64, setName, label) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -103,7 +111,7 @@ export default function TutorVerificationPage() {
       "image/jpg",
     ];
     if (!validTypes.includes(file.type)) {
-      setError("Please upload a valid file (PDF or Image).");
+      setError(`Please upload a valid ${label} file (PDF or Image).`);
       return;
     }
 
@@ -116,28 +124,28 @@ export default function TutorVerificationPage() {
       return;
     }
 
-    setFileName(file.name);
+    setName(file.name);
     const reader = new FileReader();
 
     reader.onerror = () => {
       setError("Failed to read file. Please try again.");
-      setDocumentBase64(null);
-      setFileName("");
+      setBase64(null);
+      setName("");
     };
 
     reader.onloadend = () => {
       try {
         const base64String = reader.result?.split(",")?.[1];
         if (base64String) {
-          setDocumentBase64(base64String);
+          setBase64(base64String);
           setError("");
         } else {
           throw new Error("Failed to encode file");
         }
       } catch (err) {
         setError("Failed to process file. Please try again.");
-        setDocumentBase64(null);
-        setFileName("");
+        setBase64(null);
+        setName("");
       }
     };
 
@@ -153,9 +161,9 @@ export default function TutorVerificationPage() {
 
     submitLockRef.current = true;
 
-    if (!documentBase64) {
+    if (!tutorImageBase64 || !certificationBase64 || !citizenshipBase64) {
       setError(
-        "Please upload your qualification document (e.g. Citizenship, Degree).",
+        "Please upload tutor image, certification, and citizenship/NID documents.",
       );
       submitLockRef.current = false;
       return;
@@ -175,7 +183,10 @@ export default function TutorVerificationPage() {
         location: formData.location?.trim(),
         serviceArea: formData.serviceArea?.trim(),
         mapLocation: formData.mapLocation?.trim(),
-        documentUrl: documentBase64,
+        tutorImageUrl: tutorImageBase64,
+        certificationDocumentUrl: certificationBase64,
+        citizenshipDocumentUrl: citizenshipBase64,
+        documentUrl: citizenshipBase64,
         amount: 500, // fixed verification fee for example
       };
 
@@ -383,6 +394,7 @@ export default function TutorVerificationPage() {
                   type="number"
                   name="hourlyRate"
                   required
+                  min="1"
                   placeholder="500"
                   value={formData.hourlyRate}
                   onChange={handleInputChange}
@@ -396,6 +408,7 @@ export default function TutorVerificationPage() {
                 type="number"
                 name="experienceYears"
                 required
+                min="0"
                 placeholder="2"
                 value={formData.experienceYears}
                 onChange={handleInputChange}
@@ -441,19 +454,78 @@ export default function TutorVerificationPage() {
           </div>
 
           <div className="input-group full-width file-upload-group">
-            <label>Verification Document (Citizenship or Degree) *</label>
+            <label>Tutor Image *</label>
             <div className="file-upload-box">
               <UploadCloud size={32} className="upload-icon" />
               <p>Drag and drop or click to upload</p>
               <input
                 type="file"
                 accept=".pdf, .png, .jpg, .jpeg"
-                onChange={handleFileChange}
+                onChange={(e) =>
+                  handleFileChange(
+                    e,
+                    setTutorImageBase64,
+                    setTutorImageName,
+                    "tutor image",
+                  )
+                }
                 required
               />
-              {fileName && (
+              {tutorImageName && (
                 <p className="file-name">
-                  <CheckCircle2 size={16} /> {fileName}
+                  <CheckCircle2 size={16} /> {tutorImageName}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="input-group full-width file-upload-group">
+            <label>Certification Document *</label>
+            <div className="file-upload-box">
+              <UploadCloud size={32} className="upload-icon" />
+              <p>Drag and drop or click to upload</p>
+              <input
+                type="file"
+                accept=".pdf, .png, .jpg, .jpeg"
+                onChange={(e) =>
+                  handleFileChange(
+                    e,
+                    setCertificationBase64,
+                    setCertificationName,
+                    "certification",
+                  )
+                }
+                required
+              />
+              {certificationName && (
+                <p className="file-name">
+                  <CheckCircle2 size={16} /> {certificationName}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="input-group full-width file-upload-group">
+            <label>Citizenship / NID Document *</label>
+            <div className="file-upload-box">
+              <UploadCloud size={32} className="upload-icon" />
+              <p>Drag and drop or click to upload</p>
+              <input
+                type="file"
+                accept=".pdf, .png, .jpg, .jpeg"
+                onChange={(e) =>
+                  handleFileChange(
+                    e,
+                    setCitizenshipBase64,
+                    setCitizenshipName,
+                    "citizenship/NID",
+                  )
+                }
+                required
+              />
+              {citizenshipName && (
+                <p className="file-name">
+                  <CheckCircle2 size={16} /> {citizenshipName}
                 </p>
               )}
             </div>
