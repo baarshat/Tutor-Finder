@@ -63,10 +63,7 @@ export default function PaymentSuccessPage() {
         }
 
         const currentUser = JSON.parse(localStorage.getItem("user") || "{}");
-        if (currentUser && Object.keys(currentUser).length > 0) {
-          const updatedUser = { ...currentUser, verified: true };
-          localStorage.setItem("user", JSON.stringify(updatedUser));
-        }
+        // Intentionally NOT setting verified to true here, as superadmin must verify manually.
 
         setStatus("success");
         setMessage(

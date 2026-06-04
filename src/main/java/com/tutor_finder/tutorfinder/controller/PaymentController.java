@@ -41,7 +41,9 @@ public class PaymentController {
         private Integer experienceYears;
         private String location;
         private String serviceArea;
-        private String documentUrl;
+        private String profilePicUrl;
+        private String certificationUrl;
+        private String nidUrl;
         private String mapLocation;
         private Double amount;
     }
@@ -67,7 +69,9 @@ public class PaymentController {
             tutorProfile.setExperienceYears(request.getExperienceYears());
             tutorProfile.setLocation(request.getLocation());
             tutorProfile.setServiceArea(request.getServiceArea());
-            tutorProfile.setDocumentUrl(request.getDocumentUrl());
+            tutorProfile.setProfilePicUrl(request.getProfilePicUrl());
+            tutorProfile.setCertificationUrl(request.getCertificationUrl());
+            tutorProfile.setNidUrl(request.getNidUrl());
             tutorProfile.setMapLocation(request.getMapLocation());
             tutorProfile.setSubscriptionActive(false);
             tutorProfile.setStatus("PENDING");
@@ -180,9 +184,8 @@ public class PaymentController {
             tutorProfile.setStatus("PENDING"); // Stays pending for Superadmin physical verification
             tutorProfileRepository.save(tutorProfile);
 
-            User paymentUser = payment.getUser();
-            paymentUser.setVerified(true);
-            userRepository.save(paymentUser);
+            // We intentionally do not set the user or tutor to VERIFIED yet,
+            // as this requires manual superadmin verification.
 
             return ResponseEntity.ok(Map.of("message", "Payment successfully verified and profile submitted!"));
 

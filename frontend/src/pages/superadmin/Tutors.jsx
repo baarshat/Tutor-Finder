@@ -13,6 +13,7 @@ export default function Tutors() {
     open: false,
     url: "",
     isPdf: false,
+    label: "Document",
   });
 
   const token = JSON.parse(localStorage.getItem("user") || "{}")?.token;
@@ -92,17 +93,18 @@ export default function Tutors() {
     return trimmed.startsWith("JVBERi0");
   };
 
-  const openDocumentModal = (doc) => {
+  const openDocumentModal = (doc, label = "Document") => {
     const href = getDocumentHref(doc);
     setDocumentModal({
       open: true,
       url: href,
       isPdf: isPdfDocument(doc),
+      label,
     });
   };
 
   const closeDocumentModal = () => {
-    setDocumentModal({ open: false, url: "", isPdf: false });
+    setDocumentModal({ open: false, url: "", isPdf: false, label: "Document" });
   };
 
   return (
@@ -135,20 +137,22 @@ export default function Tutors() {
                 <th>Hourly Rate</th>
                 <th>Experience</th>
                 <th>Status</th>
-                <th>Document</th>
+                <th>Pic</th>
+                <th>Cert</th>
+                <th>NID</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="8" className="sa-table-empty">
+                  <td colSpan="10" className="sa-table-empty">
                     Loading...
                   </td>
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan="8" className="sa-table-empty">
+                  <td colSpan="10" className="sa-table-empty">
                     No tutors found
                   </td>
                 </tr>
@@ -172,12 +176,42 @@ export default function Tutors() {
                       </span>
                     </td>
                     <td>
-                      {t.documentUrl ? (
+                      {t.profilePicUrl ? (
                         <button
                           type="button"
                           className="sa-icon-btn sa-icon-btn--green"
-                          onClick={() => openDocumentModal(t.documentUrl)}
-                          title="View document"
+                          onClick={() => openDocumentModal(t.profilePicUrl, "Profile Picture")}
+                          title="View profile picture"
+                          style={{ textDecoration: "none", padding: "0 10px" }}
+                        >
+                          View
+                        </button>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td>
+                      {t.certificationUrl ? (
+                        <button
+                          type="button"
+                          className="sa-icon-btn sa-icon-btn--green"
+                          onClick={() => openDocumentModal(t.certificationUrl, "Certification")}
+                          title="View certification"
+                          style={{ textDecoration: "none", padding: "0 10px" }}
+                        >
+                          View
+                        </button>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
+                    <td>
+                      {t.nidUrl ? (
+                        <button
+                          type="button"
+                          className="sa-icon-btn sa-icon-btn--green"
+                          onClick={() => openDocumentModal(t.nidUrl, "NID / Citizenship")}
+                          title="View NID/Citizenship"
                           style={{ textDecoration: "none", padding: "0 10px" }}
                         >
                           View
@@ -233,7 +267,7 @@ export default function Tutors() {
             onClick={(e) => e.stopPropagation()}
             style={{ maxWidth: "900px", width: "90%" }}
           >
-            <h2 className="sa-modal__title">Tutor Document</h2>
+            <h2 className="sa-modal__title">{documentModal.label}</h2>
             <div style={{ padding: "12px 0 20px" }}>
               {documentModal.isPdf ? (
                 <iframe

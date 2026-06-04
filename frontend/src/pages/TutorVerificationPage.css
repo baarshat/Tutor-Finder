@@ -111,6 +111,32 @@
   padding-left: 2.75rem;
 }
 
+/* Document Uploads Grid */
+.document-uploads-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1rem;
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .document-uploads-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.document-uploads-grid .file-upload-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.document-uploads-grid .file-upload-group label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #374151;
+}
+
 /* File Upload */
 .file-upload-box {
   border: 2px dashed #d1d5db;

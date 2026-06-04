@@ -2,9 +2,11 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   ShieldAlert,
   MapPin,
-  DollarSign,
   UploadCloud,
   CheckCircle2,
+  Camera,
+  Award,
+  CreditCard,
 } from "lucide-react";
 import "./TutorVerificationPage.css";
 
@@ -18,8 +20,11 @@ export default function TutorVerificationPage() {
     serviceArea: "",
     mapLocation: "",
   });
-  const [documentBase64, setDocumentBase64] = useState(null);
-  const [fileName, setFileName] = useState("");
+  const [documents, setDocuments] = useState({
+    profilePic: { base64: null, name: "" },
+    certification: { base64: null, name: "" },
+    nid: { base64: null, name: "" },
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [profileStatus, setProfileStatus] = useState("LOADING");
@@ -83,7 +88,9 @@ export default function TutorVerificationPage() {
           return;
         }
 
-        setProfileStatus("READY");
+        setProfileStatus(
+          tutorProfile?.subscriptionActive ? "PENDING" : "READY",
+        );
       } catch {
         setProfileStatus("READY");
       }
@@ -93,26 +100,32 @@ export default function TutorVerificationPage() {
   }, []);
 
   const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    let newValue = value;
+    if (name === "experienceYears") {
+      if (value === "") {
+        newValue = "";
+      } else {
+        const parsed = parseInt(value, 10);
+        newValue = isNaN(parsed) ? "" : String(Math.max(0, parsed));
+      }
+    }
+
+    setFormData({ ...formData, [name]: newValue });
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = (key, acceptImages = true) => (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validate file type
-    const validTypes = [
-      "application/pdf",
-      "image/png",
-      "image/jpeg",
-      "image/jpg",
-    ];
+    const validTypes = acceptImages
+      ? ["application/pdf", "image/png", "image/jpeg", "image/jpg"]
+      : ["application/pdf", "image/png", "image/jpeg", "image/jpg"];
     if (!validTypes.includes(file.type)) {
       setError("Please upload a valid file (PDF or Image).");
       return;
     }
 
-    // Validate file size (5MB)
     const maxSize = 5 * 1024 * 1024;
     if (file.size > maxSize) {
       setError(
@@ -121,28 +134,28 @@ export default function TutorVerificationPage() {
       return;
     }
 
-    setFileName(file.name);
     const reader = new FileReader();
 
     reader.onerror = () => {
       setError("Failed to read file. Please try again.");
-      setDocumentBase64(null);
-      setFileName("");
+      setDocuments((prev) => ({ ...prev, [key]: { base64: null, name: "" } }));
     };
 
     reader.onloadend = () => {
       try {
         const base64String = reader.result?.split(",")?.[1];
         if (base64String) {
-          setDocumentBase64(base64String);
+          setDocuments((prev) => ({
+            ...prev,
+            [key]: { base64: base64String, name: file.name },
+          }));
           setError("");
         } else {
           throw new Error("Failed to encode file");
         }
       } catch (err) {
         setError("Failed to process file. Please try again.");
-        setDocumentBase64(null);
-        setFileName("");
+        setDocuments((prev) => ({ ...prev, [key]: { base64: null, name: "" } }));
       }
     };
 
@@ -158,9 +171,9 @@ export default function TutorVerificationPage() {
 
     submitLockRef.current = true;
 
-    if (!documentBase64) {
+    if (!documents.profilePic.base64 || !documents.certification.base64 || !documents.nid.base64) {
       setError(
-        "Please upload your qualification document (e.g. Citizenship, Degree).",
+        "Please upload all three required documents: Profile Picture, Certification, and NID/Citizenship.",
       );
       submitLockRef.current = false;
       return;
@@ -180,7 +193,9 @@ export default function TutorVerificationPage() {
         location: formData.location?.trim(),
         serviceArea: formData.serviceArea?.trim(),
         mapLocation: formData.mapLocation?.trim(),
-        documentUrl: documentBase64,
+        profilePicUrl: documents.profilePic.base64,
+        certificationUrl: documents.certification.base64,
+        nidUrl: documents.nid.base64,
         amount: 500, // fixed verification fee for example
       };
 
@@ -379,20 +394,17 @@ export default function TutorVerificationPage() {
                 onChange={handleInputChange}
               />
             </div>
-
+            
             <div className="input-group">
               <label>Hourly Rate (Rs.)</label>
-              <div className="input-icon-wrapper">
-                <DollarSign size={18} className="input-icon" />
-                <input
-                  type="number"
-                  name="hourlyRate"
-                  required
-                  placeholder="500"
-                  value={formData.hourlyRate}
-                  onChange={handleInputChange}
-                />
-              </div>
+              <input
+                type="number"
+                name="hourlyRate"
+                required
+                placeholder="Rs. 500"
+                value={formData.hourlyRate}
+                onChange={handleInputChange}
+              />
             </div>
 
             <div className="input-group">
@@ -402,6 +414,8 @@ export default function TutorVerificationPage() {
                 name="experienceYears"
                 required
                 placeholder="2"
+                min="1"
+                step="1"
                 value={formData.experienceYears}
                 onChange={handleInputChange}
               />
@@ -445,22 +459,62 @@ export default function TutorVerificationPage() {
             />
           </div>
 
-          <div className="input-group full-width file-upload-group">
-            <label>Verification Document (Citizenship or Degree) *</label>
-            <div className="file-upload-box">
-              <UploadCloud size={32} className="upload-icon" />
-              <p>Drag and drop or click to upload</p>
-              <input
-                type="file"
-                accept=".pdf, .png, .jpg, .jpeg"
-                onChange={handleFileChange}
-                required
-              />
-              {fileName && (
-                <p className="file-name">
-                  <CheckCircle2 size={16} /> {fileName}
-                </p>
-              )}
+          <div className="input-group full-width">
+            <label style={{ marginBottom: "0.5rem", fontWeight: "600" }}>Required Documents *</label>
+            <div className="document-uploads-grid">
+              <div className="file-upload-group">
+                <label><Camera size={16} style={{ marginRight: 6, verticalAlign: "middle" }} />Profile Picture</label>
+                <div className="file-upload-box">
+                  <UploadCloud size={28} className="upload-icon" />
+                  <p>Upload your photo</p>
+                  <input
+                    type="file"
+                    accept=".png, .jpg, .jpeg"
+                    onChange={handleFileChange("profilePic")}
+                  />
+                  {documents.profilePic.name && (
+                    <p className="file-name">
+                      <CheckCircle2 size={16} /> {documents.profilePic.name}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="file-upload-group">
+                <label><Award size={16} style={{ marginRight: 6, verticalAlign: "middle" }} />Certification</label>
+                <div className="file-upload-box">
+                  <UploadCloud size={28} className="upload-icon" />
+                  <p>Upload degree/certificate</p>
+                  <input
+                    type="file"
+                    accept=".pdf, .png, .jpg, .jpeg"
+                    onChange={handleFileChange("certification")}
+                  />
+                  {documents.certification.name && (
+                    <p className="file-name">
+                      <CheckCircle2 size={16} /> {documents.certification.name}
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="file-upload-group">
+                <label><CreditCard size={16} style={{ marginRight: 6, verticalAlign: "middle" }} />NID / Citizenship</label>
+                <div className="file-upload-box">
+                  <UploadCloud size={28} className="upload-icon" />
+                  <p>Upload NID or Citizenship</p>
+                  <input
+                    type="file"
+                    accept=".pdf, .png, .jpg, .jpeg"
+                    onChange={handleFileChange("nid")}
+                  />
+                  {documents.nid.name && (
+                    <p className="file-name">
+                      <CheckCircle2 size={16} /> {documents.nid.name}
+                    </p>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
