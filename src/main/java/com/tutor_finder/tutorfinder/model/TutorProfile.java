@@ -41,7 +41,16 @@ public class TutorProfile {
     private boolean subscriptionActive = false; // Must pay via eSewa/Khalti for visibility
 
     @Column(columnDefinition = "LONGTEXT")
-    private String documentUrl; // Base64 document or certificate path
+    private String documentUrl; // legacy single document field (may remain null)
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String imageUrl; // Base64 profile image
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String certificationUrl; // Base64 certification document
+
+    @Column(columnDefinition = "LONGTEXT")
+    private String nidUrl; // Base64 NID/Citizenship document
 
     private String mapLocation; // Google Map coordinate/address embed
 

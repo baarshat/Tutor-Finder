@@ -53,6 +53,9 @@ public class PaymentController {
         private String location;
         private String serviceArea;
         private String documentUrl;
+        private String imageUrl;
+        private String certificationUrl;
+        private String nidUrl;
         private String mapLocation;
         private Double amount;
         private String paymentGateway;
@@ -82,6 +85,10 @@ public class PaymentController {
             tutorProfile.setDocumentUrl(request.getDocumentUrl());
             tutorProfile.setMapLocation(request.getMapLocation());
             tutorProfile.setSubscriptionActive(false);
+            tutorProfile.setDocumentUrl(request.getDocumentUrl());
+            tutorProfile.setImageUrl(request.getImageUrl());
+            tutorProfile.setCertificationUrl(request.getCertificationUrl());
+            tutorProfile.setNidUrl(request.getNidUrl());
             tutorProfile.setStatus("PENDING");
             tutorProfileRepository.saveAndFlush(tutorProfile);
 

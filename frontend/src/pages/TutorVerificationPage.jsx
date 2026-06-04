@@ -20,6 +20,12 @@ export default function TutorVerificationPage() {
   });
   const [documentBase64, setDocumentBase64] = useState(null);
   const [fileName, setFileName] = useState("");
+  const [imageBase64, setImageBase64] = useState(null);
+  const [imageFileName, setImageFileName] = useState("");
+  const [certificationBase64, setCertificationBase64] = useState(null);
+  const [certificationFileName, setCertificationFileName] = useState("");
+  const [nidBase64, setNidBase64] = useState(null);
+  const [nidFileName, setNidFileName] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [profileStatus, setProfileStatus] = useState("LOADING");
@@ -71,14 +77,19 @@ export default function TutorVerificationPage() {
         }
 
         const tutorProfile = await res.json();
-        if (tutorProfile?.status) {
-          setProfileStatus(String(tutorProfile.status).toUpperCase());
+        const status = String(tutorProfile?.status || "").toUpperCase();
+
+        if (status === "VERIFIED") {
+          setProfileStatus("VERIFIED");
           return;
         }
 
-        setProfileStatus(
-          tutorProfile?.subscriptionActive ? "PENDING" : "READY",
-        );
+        if (status === "PENDING" && tutorProfile?.subscriptionActive) {
+          setProfileStatus("PENDING");
+          return;
+        }
+
+        setProfileStatus("READY");
       } catch {
         setProfileStatus("READY");
       }
@@ -88,7 +99,18 @@ export default function TutorVerificationPage() {
   }, []);
 
   const handleInputChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    let newValue = value;
+    if (name === "experienceYears") {
+      if (value === "") {
+        newValue = "";
+      } else {
+        const parsed = parseInt(value, 10);
+        newValue = isNaN(parsed) ? "" : String(Math.max(0, parsed));
+      }
+    }
+
+    setFormData({ ...formData, [name]: newValue });
   };
 
   const handleFileChange = (e) => {
@@ -144,6 +166,57 @@ export default function TutorVerificationPage() {
     reader.readAsDataURL(file);
   };
 
+  const handleSpecificFileChange = (e, setterBase64, setterName) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const validTypes = [
+      "application/pdf",
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+    ];
+    if (!validTypes.includes(file.type)) {
+      setError("Please upload a valid file (PDF or Image).");
+      return;
+    }
+
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+      setError(
+        `File size should not exceed 5MB. Your file is ${(file.size / (1024 * 1024)).toFixed(2)}MB.`,
+      );
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onerror = () => {
+      setError("Failed to read file. Please try again.");
+      setterBase64(null);
+      setterName("");
+    };
+
+    reader.onloadend = () => {
+      try {
+        const base64String = reader.result?.split(",")?.[1];
+        if (base64String) {
+          setterBase64(base64String);
+          setterName(file.name);
+          setError("");
+        } else {
+          throw new Error("Failed to encode file");
+        }
+      } catch (err) {
+        setError("Failed to process file. Please try again.");
+        setterBase64(null);
+        setterName("");
+      }
+    };
+
+    reader.readAsDataURL(file);
+  };
+
   const initiatePayment = async (e) => {
     e.preventDefault();
 
@@ -153,13 +226,7 @@ export default function TutorVerificationPage() {
 
     submitLockRef.current = true;
 
-    if (!documentBase64) {
-      setError(
-        "Please upload your qualification document (e.g. Citizenship, Degree).",
-      );
-      submitLockRef.current = false;
-      return;
-    }
+    // moved document validations after payload creation
 
     setLoading(true);
     setError("");
@@ -175,7 +242,9 @@ export default function TutorVerificationPage() {
         location: formData.location?.trim(),
         serviceArea: formData.serviceArea?.trim(),
         mapLocation: formData.mapLocation?.trim(),
-        documentUrl: documentBase64,
+        imageUrl: imageBase64,
+        certificationUrl: certificationBase64,
+        nidUrl: nidBase64,
         amount: 500, // fixed verification fee for example
       };
 
@@ -196,6 +265,28 @@ export default function TutorVerificationPage() {
 
       if (isNaN(payload.experienceYears) || payload.experienceYears < 0) {
         setError("Please enter valid experience years.");
+        setLoading(false);
+        submitLockRef.current = false;
+        return;
+      }
+
+      // Validate uploaded files
+      if (!imageBase64) {
+        setError("Please upload your profile image.");
+        setLoading(false);
+        submitLockRef.current = false;
+        return;
+      }
+
+      if (!certificationBase64) {
+        setError("Please upload your certification document.");
+        setLoading(false);
+        submitLockRef.current = false;
+        return;
+      }
+
+      if (!nidBase64) {
+        setError("Please upload your NID/Citizenship document.");
         setLoading(false);
         submitLockRef.current = false;
         return;
@@ -397,6 +488,8 @@ export default function TutorVerificationPage() {
                 name="experienceYears"
                 required
                 placeholder="2"
+                min="0"
+                step="1"
                 value={formData.experienceYears}
                 onChange={handleInputChange}
               />
@@ -441,19 +534,67 @@ export default function TutorVerificationPage() {
           </div>
 
           <div className="input-group full-width file-upload-group">
-            <label>Verification Document (Citizenship or Degree) *</label>
+            <label>Profile Image *</label>
             <div className="file-upload-box">
               <UploadCloud size={32} className="upload-icon" />
-              <p>Drag and drop or click to upload</p>
+              <p>Upload a clear profile photo (PNG/JPG)</p>
+              <input
+                type="file"
+                accept=".png, .jpg, .jpeg"
+                onChange={(e) =>
+                  handleSpecificFileChange(e, setImageBase64, setImageFileName)
+                }
+                required
+              />
+              {imageFileName && (
+                <p className="file-name">
+                  <CheckCircle2 size={16} /> {imageFileName}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="input-group full-width file-upload-group">
+            <label>Certification (Degree/Certificates) *</label>
+            <div className="file-upload-box">
+              <UploadCloud size={32} className="upload-icon" />
+              <p>Upload your certification (PDF or Image)</p>
               <input
                 type="file"
                 accept=".pdf, .png, .jpg, .jpeg"
-                onChange={handleFileChange}
+                onChange={(e) =>
+                  handleSpecificFileChange(
+                    e,
+                    setCertificationBase64,
+                    setCertificationFileName,
+                  )
+                }
                 required
               />
-              {fileName && (
+              {certificationFileName && (
                 <p className="file-name">
-                  <CheckCircle2 size={16} /> {fileName}
+                  <CheckCircle2 size={16} /> {certificationFileName}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="input-group full-width file-upload-group">
+            <label>NID / Citizenship (Photo or PDF) *</label>
+            <div className="file-upload-box">
+              <UploadCloud size={32} className="upload-icon" />
+              <p>Upload your NID or Citizenship document (PDF or Image)</p>
+              <input
+                type="file"
+                accept=".pdf, .png, .jpg, .jpeg"
+                onChange={(e) =>
+                  handleSpecificFileChange(e, setNidBase64, setNidFileName)
+                }
+                required
+              />
+              {nidFileName && (
+                <p className="file-name">
+                  <CheckCircle2 size={16} /> {nidFileName}
                 </p>
               )}
             </div>
