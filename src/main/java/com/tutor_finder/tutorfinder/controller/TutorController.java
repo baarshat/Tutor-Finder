@@ -85,6 +85,9 @@ public class TutorController {
                     existingTutor.setServiceArea(tutorDetails.getServiceArea());
                     existingTutor.setSubscriptionActive(tutorDetails.isSubscriptionActive());
                     existingTutor.setDocumentUrl(tutorDetails.getDocumentUrl());
+                    existingTutor.setTutorImageUrl(tutorDetails.getTutorImageUrl());
+                    existingTutor.setCertificationDocumentUrl(tutorDetails.getCertificationDocumentUrl());
+                    existingTutor.setCitizenshipDocumentUrl(tutorDetails.getCitizenshipDocumentUrl());
                     existingTutor.setMapLocation(tutorDetails.getMapLocation());
                     existingTutor.setStatus(tutorDetails.getStatus());
                     TutorProfile updated = tutorProfileService.saveTutorProfile(existingTutor);
@@ -114,6 +117,9 @@ public class TutorController {
         summary.put("serviceArea", tutor.getServiceArea());
         summary.put("subscriptionActive", tutor.isSubscriptionActive());
         summary.put("documentUrl", tutor.getDocumentUrl());
+        summary.put("tutorImageUrl", tutor.getTutorImageUrl());
+        summary.put("certificationDocumentUrl", tutor.getCertificationDocumentUrl());
+        summary.put("citizenshipDocumentUrl", tutor.getCitizenshipDocumentUrl());
         summary.put("mapLocation", tutor.getMapLocation());
         summary.put("status", tutor.getStatus());
 
