@@ -71,14 +71,19 @@ export default function TutorVerificationPage() {
         }
 
         const tutorProfile = await res.json();
-        if (tutorProfile?.status) {
-          setProfileStatus(String(tutorProfile.status).toUpperCase());
+        const status = String(tutorProfile?.status || "").toUpperCase();
+
+        if (status === "VERIFIED") {
+          setProfileStatus("VERIFIED");
           return;
         }
 
-        setProfileStatus(
-          tutorProfile?.subscriptionActive ? "PENDING" : "READY",
-        );
+        if (status === "PENDING" && tutorProfile?.subscriptionActive) {
+          setProfileStatus("PENDING");
+          return;
+        }
+
+        setProfileStatus("READY");
       } catch {
         setProfileStatus("READY");
       }
