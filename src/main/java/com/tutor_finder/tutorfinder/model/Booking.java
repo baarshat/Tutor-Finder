@@ -51,6 +51,10 @@ public class Booking {
     @Column(nullable = false)
     private BookingStatus status = BookingStatus.PENDING;
 
+    @Column(name = "reminder_sent", nullable = false)
+    @Builder.Default
+    private boolean reminderSent = false;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
 

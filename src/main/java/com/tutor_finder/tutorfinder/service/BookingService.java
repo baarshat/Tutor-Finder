@@ -11,6 +11,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.scheduling.annotation.Scheduled;
+
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -31,6 +33,7 @@ public class BookingService {
     private final StudentProfileRepository studentProfileRepository;
     private final AvailabilityService availabilityService;
     private final NotificationService notificationService;
+    private final EmailService emailService;
 
     public Booking createBooking(User student, BookingRequest request) {
         if (student == null) {
@@ -114,6 +117,28 @@ public class BookingService {
         );
         notificationService.create(student, studentMessage, NotificationType.BOOKING_REQUEST);
 
+        // Send Email Notifications
+        String emailSubject = "New Booking Created - TutorFinder";
+        String tutorEmailBody = String.format(
+                "Dear %s,\n\nYou have received a new booking request from %s for %s at %s.\n\nNotes: %s\n\nBest regards,\nTutorFinder Team",
+                tutorProfile.getUser().getName(),
+                studentName,
+                startTime.toLocalDate(),
+                startTime.toLocalTime().format(TIME_FORMAT),
+                request.getNotes() != null ? request.getNotes() : "N/A"
+        );
+        String studentEmailBody = String.format(
+                "Dear %s,\n\nYour booking request with tutor %s has been submitted for %s at %s.\n\nNotes: %s\n\nBest regards,\nTutorFinder Team",
+                studentName,
+                tutorProfile.getUser().getName(),
+                startTime.toLocalDate(),
+                startTime.toLocalTime().format(TIME_FORMAT),
+                request.getNotes() != null ? request.getNotes() : "N/A"
+        );
+
+        emailService.sendEmail(tutorProfile.getUser().getEmail(), emailSubject, tutorEmailBody);
+        emailService.sendEmail(studentEmail, emailSubject, studentEmailBody);
+
         return savedBooking;
     }
 
@@ -176,6 +201,78 @@ public class BookingService {
         );
         notificationService.create(booking.getStudent(), studentMessage, NotificationType.BOOKING_CANCELLED);
 
+        // Send Email Notifications
+        String emailSubject = "Booking Cancelled - TutorFinder";
+        String tutorEmailBody = String.format(
+                "Dear %s,\n\nThe booking with student %s for %s at %s has been cancelled.\n\nBest regards,\nTutorFinder Team",
+                booking.getTutorProfile().getUser().getName(),
+                booking.getStudentName(),
+                booking.getStartTime().toLocalDate(),
+                booking.getStartTime().toLocalTime().format(TIME_FORMAT)
+        );
+        String studentEmailBody = String.format(
+                "Dear %s,\n\nYour booking with tutor %s for %s at %s has been cancelled.\n\nBest regards,\nTutorFinder Team",
+                booking.getStudentName(),
+                booking.getTutorProfile().getUser().getName(),
+                booking.getStartTime().toLocalDate(),
+                booking.getStartTime().toLocalTime().format(TIME_FORMAT)
+        );
+
+        emailService.sendEmail(booking.getTutorProfile().getUser().getEmail(), emailSubject, tutorEmailBody);
+        emailService.sendEmail(booking.getStudentEmail(), emailSubject, studentEmailBody);
+
         return savedBooking;
+    }
+
+    @Scheduled(fixedRate = 60000)
+    public void checkUpcomingSessions() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime boundary = now.plusMinutes(15);
+        List<Booking> upcomingBookings = bookingRepository.findUpcomingReminders(
+                BookingStatus.CANCELLED,
+                now,
+                boundary
+        );
+
+        for (Booking booking : upcomingBookings) {
+            try {
+                // Send db notification
+                String message = String.format(
+                        Locale.US,
+                        "Reminder: Your session is starting at %s.",
+                        booking.getStartTime().toLocalTime().format(TIME_FORMAT)
+                );
+                
+                notificationService.create(booking.getStudent(), message, NotificationType.GENERAL);
+                notificationService.create(booking.getTutorProfile().getUser(), message, NotificationType.GENERAL);
+
+                // Send email notification
+                String emailSubject = "Upcoming Session Reminder";
+                String studentEmailBody = String.format(
+                        "Dear %s,\n\nThis is a reminder that your session with tutor %s is starting at %s on %s.\n\nBest regards,\nTutorFinder Team",
+                        booking.getStudentName(),
+                        booking.getTutorProfile().getUser().getName(),
+                        booking.getStartTime().toLocalTime().format(TIME_FORMAT),
+                        booking.getStartTime().toLocalDate()
+                );
+                String tutorEmailBody = String.format(
+                        "Dear %s,\n\nThis is a reminder that your session with student %s is starting at %s on %s.\n\nBest regards,\nTutorFinder Team",
+                        booking.getTutorProfile().getUser().getName(),
+                        booking.getStudentName(),
+                        booking.getStartTime().toLocalTime().format(TIME_FORMAT),
+                        booking.getStartTime().toLocalDate()
+                );
+
+                emailService.sendEmail(booking.getStudentEmail(), emailSubject, studentEmailBody);
+                emailService.sendEmail(booking.getTutorProfile().getUser().getEmail(), emailSubject, tutorEmailBody);
+
+                // Mark reminder as sent
+                booking.setReminderSent(true);
+                bookingRepository.save(booking);
+            } catch (Exception e) {
+                System.err.println("Error processing upcoming booking reminder for ID " + booking.getId() + ": " + e.getMessage());
+                e.printStackTrace();
+            }
+        }
     }
 }

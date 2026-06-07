@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Calendar, Clock } from "lucide-react";
+import { toast } from "react-toastify";
 import "./BookingsDashboardPage.css";
 
 const API_BASE = "http://localhost:8080";
@@ -79,7 +80,7 @@ const BookingsDashboardPage = () => {
     loadBookings(activeTab);
   }, [activeTab, loadBookings]);
 
-  const handleCancel = async (bookingId) => {
+  const executeCancel = async (bookingId) => {
     try {
       const token = getAuthToken();
       const res = await fetch(`${API_BASE}/api/bookings/${bookingId}/cancel`, {
@@ -102,10 +103,56 @@ const BookingsDashboardPage = () => {
         throw new Error(message?.message || "Failed to cancel booking.");
       }
 
+      toast.success("Booking cancelled successfully!");
       await loadBookings(activeTab);
     } catch (err) {
+      toast.error(err?.message || "Failed to cancel booking.");
       setError(err?.message || "Failed to cancel booking.");
     }
+  };
+
+  const handleCancel = (bookingId) => {
+    toast.info(
+      <div>
+        <p style={{ margin: "0 0 10px 0", fontWeight: "500", color: "#333" }}>
+          Are you sure you want to cancel this booking?
+        </p>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button
+            onClick={async () => {
+              toast.dismiss();
+              await executeCancel(bookingId);
+            }}
+            style={{
+              background: "#dc3545",
+              color: "white",
+              padding: "6px 12px",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontWeight: "500",
+            }}
+          >
+            Yes, Cancel
+          </button>
+          <button
+            onClick={() => toast.dismiss()}
+            style={{
+              background: "#e2e8f0",
+              color: "#333",
+              padding: "6px 12px",
+              border: "none",
+              borderRadius: "4px",
+              cursor: "pointer",
+              fontWeight: "500",
+            }}
+          >
+            No, Keep
+          </button>
+        </div>
+      </div>,
+      { autoClose: false, closeOnClick: false, draggable: false, icon: false }
+    );
   };
 
   const bookingCards =

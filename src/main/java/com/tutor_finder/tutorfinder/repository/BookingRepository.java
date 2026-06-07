@@ -29,4 +29,11 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("studentId") Long studentId,
             @Param("status") BookingStatus status
     );
+
+    @Query("SELECT b FROM Booking b WHERE b.status != :status AND b.reminderSent = false AND b.startTime BETWEEN :start AND :end")
+    List<Booking> findUpcomingReminders(
+            @Param("status") BookingStatus status,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end
+    );
 }
