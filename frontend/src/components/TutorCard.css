@@ -10,6 +10,14 @@
   box-shadow: var(--shadow-hard);
 }
 
+.tutor-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
 .tutor-card:hover {
   transform: translate(6px, 6px);
   box-shadow: var(--shadow-hard-hover);

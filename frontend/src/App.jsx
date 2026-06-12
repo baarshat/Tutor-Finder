@@ -33,6 +33,7 @@ import PaymentSuccessPage from "./pages/PaymentSuccessPage";
 import PaymentFailurePage from "./pages/PaymentFailurePage";
 import BookingsDashboardPage from "./pages/BookingsDashboardPage";
 import TutorAvailabilityPage from "./pages/TutorAvailabilityPage";
+import TutorDetailPage from "./pages/TutorDetailPage";
 
 // CSS for superadmin layout
 import "./components/superadmin/Layout.css";
@@ -146,7 +147,7 @@ function AppContent() {
     }
   }, [user, tutorStatus, tutorStatusLoaded, location, navigate]);
 
-  const isPublicPage = ["/", "/find-tutors"].includes(location.pathname);
+  const isPublicPage = ["/", "/find-tutors"].includes(location.pathname) || location.pathname.startsWith("/tutors/");
 
   return (
     <div className="app-container">
@@ -164,6 +165,7 @@ function AppContent() {
                     {/* Public Routes */}
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/find-tutors" element={<FindTutorPage />} />
+                    <Route path="/tutors/:id" element={<TutorDetailPage />} />
                     <Route
                       path="/bookings"
                       element={<BookingsDashboardPage />}
@@ -219,6 +221,7 @@ function AppContent() {
             {/* Public Routes */}
             <Route path="/" element={<LandingPage />} />
             <Route path="/find-tutors" element={<FindTutorPage />} />
+            <Route path="/tutors/:id" element={<TutorDetailPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/bookings" element={<LoginPage />} />
