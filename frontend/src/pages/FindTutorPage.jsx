@@ -70,6 +70,9 @@ const FindTutorPage = () => {
           reviews: t.reviews || 0,
           hourlyRate: t.hourlyRate || 0,
           location: t.location || t.serviceArea || "N/A",
+          image: t.profilePicUrl
+            ? `data:image/jpeg;base64,${t.profilePicUrl}`
+            : null,
         })),
     [tutors],
   );

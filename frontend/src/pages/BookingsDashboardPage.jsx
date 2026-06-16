@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Calendar, Clock } from "lucide-react";
+import { Calendar, Clock, Star } from "lucide-react";
 import { toast } from "react-toastify";
+import ReactDOM from "react-dom";
+import SubmitReviewModal from "../components/SubmitReviewModal";
 import "./BookingsDashboardPage.css";
 
 const API_BASE = "http://localhost:8080";
@@ -35,11 +37,27 @@ const formatTimeRange = (start, end) => {
   })}`;
 };
 
+const StarDisplay = ({ rating }) => (
+  <span className="star-display">
+    {[1, 2, 3, 4, 5].map((s) => (
+      <Star
+        key={s}
+        size={14}
+        fill={s <= rating ? "#f59e0b" : "none"}
+        color={s <= rating ? "#f59e0b" : "#cbd5e1"}
+        strokeWidth={1.5}
+      />
+    ))}
+    <span className="star-display__label">{rating}/5</span>
+  </span>
+);
+
 const BookingsDashboardPage = () => {
   const [activeTab, setActiveTab] = useState("upcoming");
   const [bookings, setBookings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [reviewTarget, setReviewTarget] = useState(null); // booking to review
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const role = user?.role || "STUDENT";
@@ -163,6 +181,11 @@ const BookingsDashboardPage = () => {
         {bookings.map((booking) => {
           const counterpart =
             role === "TUTOR" ? booking.student : booking.tutor;
+          const isPast = activeTab === "past";
+          const isCancelled = booking.status === "CANCELLED";
+          const hasReview = booking.reviewed;
+          const review = booking.review;
+
           return (
             <div key={booking.id} className="booking-card">
               <div className="booking-card__header">
@@ -185,8 +208,10 @@ const BookingsDashboardPage = () => {
                 </div>
               </div>
               {booking.notes && (
-                <p className="booking-card__notes">“{booking.notes}”</p>
+                <p className="booking-card__notes">"{booking.notes}"</p>
               )}
+
+              {/* Upcoming: show cancel button */}
               {activeTab === "upcoming" && (
                 <button
                   type="button"
@@ -195,6 +220,31 @@ const BookingsDashboardPage = () => {
                 >
                   Cancel Booking
                 </button>
+              )}
+
+              {/* Past + Student: show review section */}
+              {isPast && role === "STUDENT" && !isCancelled && (
+                <div className="booking-card__review-section">
+                  {hasReview ? (
+                    <div className="booking-card__reviewed">
+                      <StarDisplay rating={review.rating} />
+                      {review.comment && (
+                        <p className="booking-card__review-comment">
+                          "{review.comment}"
+                        </p>
+                      )}
+                    </div>
+                  ) : (
+                    <button
+                      type="button"
+                      className="primary-btn booking-card__rate-btn"
+                      onClick={() => setReviewTarget(booking)}
+                    >
+                      <Star size={15} />
+                      Rate &amp; Review
+                    </button>
+                  )}
+                </div>
               )}
             </div>
           );
@@ -226,6 +276,17 @@ const BookingsDashboardPage = () => {
 
       {error && <p className="booking-error">{error}</p>}
       {loading ? <p>Loading bookings...</p> : bookingCards}
+
+      {/* Review modal portal */}
+      {reviewTarget &&
+        ReactDOM.createPortal(
+          <SubmitReviewModal
+            booking={reviewTarget}
+            onClose={() => setReviewTarget(null)}
+            onReviewSubmitted={() => loadBookings(activeTab)}
+          />,
+          document.body
+        )}
     </div>
   );
 };

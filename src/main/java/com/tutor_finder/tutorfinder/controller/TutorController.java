@@ -2,6 +2,7 @@ package com.tutor_finder.tutorfinder.controller;
 
 import com.tutor_finder.tutorfinder.model.TutorProfile;
 import com.tutor_finder.tutorfinder.model.User;
+import com.tutor_finder.tutorfinder.repository.ReviewRepository;
 import com.tutor_finder.tutorfinder.repository.UserRepository;
 import com.tutor_finder.tutorfinder.service.TutorProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,11 +20,13 @@ public class TutorController {
 
     private final TutorProfileService tutorProfileService;
     private final UserRepository userRepository;
+    private final ReviewRepository reviewRepository;
 
     @Autowired
-    public TutorController(TutorProfileService tutorProfileService, UserRepository userRepository) {
+    public TutorController(TutorProfileService tutorProfileService, UserRepository userRepository, ReviewRepository reviewRepository) {
         this.tutorProfileService = tutorProfileService;
         this.userRepository = userRepository;
+        this.reviewRepository = reviewRepository;
     }
 
     @GetMapping
@@ -120,6 +123,12 @@ public class TutorController {
         summary.put("nidUrl", tutor.getNidUrl());
         summary.put("mapLocation", tutor.getMapLocation());
         summary.put("status", tutor.getStatus());
+
+        // Real rating and review count from Review table
+        Double avgRating = reviewRepository.findAverageRatingByTutorProfileId(tutor.getId());
+        Long reviewCount = reviewRepository.countByTutorProfileId(tutor.getId());
+        summary.put("rating", avgRating != null ? Math.round(avgRating * 10.0) / 10.0 : 0.0);
+        summary.put("reviews", reviewCount != null ? reviewCount : 0L);
 
         User user = tutor.getUser();
         if (user != null) {

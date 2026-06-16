@@ -99,3 +99,47 @@
   color: #dc2626;
   margin-bottom: 1rem;
 }
+
+/* ---- Review section ---- */
+.booking-card__review-section {
+  margin-top: 0.25rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.booking-card__rate-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.875rem;
+  padding: 0.45rem 1rem;
+  border-radius: 10px;
+}
+
+.booking-card__reviewed {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.star-display {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.star-display__label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #f59e0b;
+  margin-left: 0.3rem;
+}
+
+.booking-card__review-comment {
+  font-style: italic;
+  color: #64748b;
+  font-size: 0.85rem;
+  margin: 0;
+  line-height: 1.5;
+}
+

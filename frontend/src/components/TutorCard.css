@@ -68,6 +68,12 @@
   font-weight: 600;
 }
 
+.tutor-rating .rating-value {
+  margin-left: 0.25rem;
+  color: #1e293b;
+  font-weight: 600;
+}
+
 .tutor-rating .reviews {
   color: #6b7280;
   font-weight: 400;

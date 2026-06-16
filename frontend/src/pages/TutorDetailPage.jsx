@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import ReactDOM from "react-dom";
 import {
@@ -9,18 +9,24 @@ import {
   Clock,
   MessageSquare,
   Heart,
-  ChevronLeft,
-  ChevronRight,
-  Globe,
   Award,
   GraduationCap,
   Sparkles,
   CheckCircle,
+  Trash2,
 } from "lucide-react";
 import BookingModal from "../components/BookingModal";
+import { toast } from "react-toastify";
 import "./TutorDetailPage.css";
 
 const API_BASE = "http://localhost:8080";
+
+const API_REVIEWS = "http://localhost:8080";
+
+const getAuthToken = () => {
+  const u = JSON.parse(localStorage.getItem("user") || "{}");
+  return u.token || u.accessToken || u.jwtToken || localStorage.getItem("token") || "";
+};
 
 export default function TutorDetailPage() {
   const { id } = useParams();
@@ -28,13 +34,17 @@ export default function TutorDetailPage() {
   const [tutor, setTutor] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  
+
   // UI states
   const [bioExpanded, setBioExpanded] = useState(false);
   const [educationExpanded, setEducationExpanded] = useState({});
   const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
-  const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
+
+  // Review states
+  const [reviews, setReviews] = useState([]);
+  const [reviewStats, setReviewStats] = useState({ averageRating: 0, reviewCount: 0, distribution: {} });
+  const currentUserId = JSON.parse(localStorage.getItem("user") || "{}")?.userId || JSON.parse(localStorage.getItem("user") || "{}")?.id;
 
   useEffect(() => {
     const fetchTutorDetail = async () => {
@@ -42,9 +52,7 @@ export default function TutorDetailPage() {
       setError("");
       try {
         const res = await fetch(`${API_BASE}/api/tutors/${id}`);
-        if (!res.ok) {
-          throw new Error("Tutor not found.");
-        }
+        if (!res.ok) throw new Error("Tutor not found.");
         const data = await res.json();
         setTutor(data);
       } catch (err) {
@@ -55,6 +63,36 @@ export default function TutorDetailPage() {
     };
     fetchTutorDetail();
   }, [id]);
+
+  const fetchReviews = useCallback(async () => {
+    if (!id) return;
+    try {
+      const [reviewsRes, statsRes] = await Promise.all([
+        fetch(`${API_REVIEWS}/api/reviews/tutor/${id}`),
+        fetch(`${API_REVIEWS}/api/reviews/tutor/${id}/stats`),
+      ]);
+      if (reviewsRes.ok) setReviews(await reviewsRes.json());
+      if (statsRes.ok) setReviewStats(await statsRes.json());
+    } catch { /* silently ignore review fetch errors */ }
+  }, [id]);
+
+  useEffect(() => { fetchReviews(); }, [fetchReviews]);
+
+  const handleDeleteReview = async (reviewId) => {
+    if (!window.confirm("Delete your review? This cannot be undone.")) return;
+    try {
+      const token = getAuthToken();
+      const res = await fetch(`${API_REVIEWS}/api/reviews/${reviewId}`, {
+        method: "DELETE",
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+      });
+      if (!res.ok) throw new Error("Failed to delete review.");
+      toast.success("Review deleted.");
+      fetchReviews();
+    } catch (err) {
+      toast.error(err?.message || "Failed to delete review.");
+    }
+  };
 
   // Enrich with premium mock structure for missing fields
   const profile = useMemo(() => {
@@ -91,8 +129,8 @@ export default function TutorDetailPage() {
       bookedSessions: 2,
       totalSessions: 203,
       responseTime: "2 hours",
-      rating: 4.8,
-      reviewsCount: 0,
+      rating: reviewStats.averageRating || 0,
+      reviewsCount: reviewStats.reviewCount || 0,
       education: [
         {
           id: 1,
@@ -122,62 +160,6 @@ export default function TutorDetailPage() {
     };
   }, [tutor]);
 
-  // Generate date list for schedule section
-  const weekDays = useMemo(() => {
-    const dates = [];
-    const baseDate = new Date();
-    // Offset by weekOffset * 7 days
-    baseDate.setDate(baseDate.getDate() - baseDate.getDay() + (currentWeekOffset * 7));
-
-    const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-    for (let i = 0; i < 7; i++) {
-      const d = new Date(baseDate);
-      d.setDate(baseDate.getDate() + i);
-      dates.push({
-        dayName: dayNames[i],
-        dayNum: d.getDate(),
-        monthName: monthNames[d.getMonth()],
-        year: d.getFullYear(),
-        rawDate: d,
-        isoString: d.toISOString().split("T")[0]
-      });
-    }
-    return dates;
-  }, [currentWeekOffset]);
-
-  // Simple static dummy slots for visual fidelity
-  const slotsByDate = useMemo(() => {
-    if (!profile) return {};
-    const slots = {};
-    const days = weekDays;
-    
-    // Add custom slots to Friday and Saturday of the calculated week
-    const friDate = days[5]?.isoString;
-    const satDate = days[6]?.isoString;
-
-    if (friDate) {
-      slots[friDate] = [
-        {
-          level: "Secondary (9-10)",
-          subject: profile.subjects[0] || "Maths",
-          time: "14:10 - 16:10"
-        }
-      ];
-    }
-    if (satDate) {
-      slots[satDate] = [
-        {
-          level: "Secondary (9-10)",
-          subject: profile.subjects[0] || "Maths",
-          time: "10:00 - 12:00"
-        }
-      ];
-    }
-
-    return slots;
-  }, [weekDays, profile]);
 
   const handleOpenBooking = () => {
     const storedUser = localStorage.getItem("user");
@@ -215,8 +197,6 @@ export default function TutorDetailPage() {
       </div>
     );
   }
-
-  const dateRangeString = `${weekDays[0].monthName} ${String(weekDays[0].dayNum).padStart(2, "0")} - ${weekDays[6].monthName} ${String(weekDays[6].dayNum).padStart(2, "0")} ${weekDays[6].year}`;
 
   return (
     <div className="tutor-profile-page">
@@ -288,70 +268,6 @@ export default function TutorDetailPage() {
             </div>
           </section>
 
-          {/* Schedule Slots Section */}
-          <section className="profile-detail-section">
-            <div className="section-header-flex">
-              <h2>Schedule</h2>
-              <button className="primary-btn request-session-btn" onClick={handleOpenBooking}>
-                Request a session
-              </button>
-            </div>
-
-            <div className="scheduler-header-row">
-              <div className="scheduler-date-navigation">
-                <button className="today-btn" onClick={() => setCurrentWeekOffset(0)}>Today</button>
-                <div className="date-nav-controls">
-                  <button onClick={() => setCurrentWeekOffset(prev => prev - 1)} className="nav-arrow-btn">
-                    <ChevronLeft size={18} />
-                  </button>
-                  <span className="date-nav-range">{dateRangeString}</span>
-                  <button onClick={() => setCurrentWeekOffset(prev => prev + 1)} className="nav-arrow-btn">
-                    <ChevronRight size={18} />
-                  </button>
-                </div>
-              </div>
-
-              <div className="scheduler-tz-select">
-                <Globe size={16} />
-                <select defaultValue="Asia/Kathmandu">
-                  <option value="Asia/Kathmandu">Asia/Kathmandu (GMT+5:45)</option>
-                  <option value="UTC">UTC (GMT+0:00)</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Weekly calendar slots grid */}
-            <div className="weekly-calendar-grid">
-              {weekDays.map((day) => {
-                const daySlots = slotsByDate[day.isoString] || [];
-                return (
-                  <div key={day.isoString} className="calendar-day-column">
-                    <div className="day-column-header">
-                      <span className="day-num">{day.dayNum}</span>
-                      <span className="day-name">{day.dayName}</span>
-                    </div>
-
-                    <div className="day-slots-container">
-                      {daySlots.length === 0 ? (
-                        <div className="no-sessions-label">No sessions</div>
-                      ) : (
-                        daySlots.map((slot, sIdx) => (
-                          <div key={sIdx} className="session-slot-card" onClick={handleOpenBooking}>
-                            <div className="slot-level">{slot.level}</div>
-                            <div className="slot-subject">{slot.subject}</div>
-                            <div className="slot-time">
-                              <Clock size={12} /> {slot.time}
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </section>
-
           {/* Education Timeline Section */}
           <section className="profile-detail-section">
             <h2>Education</h2>
@@ -395,37 +311,95 @@ export default function TutorDetailPage() {
           <section className="profile-detail-section">
             <h2>Student reviews</h2>
             <div className="student-reviews-grid">
-              
+
               {/* Ratings Summary Card */}
               <div className="ratings-summary-card">
-                <div className="ratings-huge-score">{profile.rating.toFixed(1)}</div>
+                <div className="ratings-huge-score">
+                  {profile.reviewsCount > 0 ? Number(profile.rating).toFixed(1) : "—"}
+                </div>
                 <div className="ratings-stars-row">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={18} fill="#e2e8f0" color="#e2e8f0" />
+                  {[1, 2, 3, 4, 5].map((s) => (
+                    <Star
+                      key={s}
+                      size={18}
+                      fill={s <= Math.round(profile.rating) && profile.reviewsCount > 0 ? "#f59e0b" : "#e2e8f0"}
+                      color={s <= Math.round(profile.rating) && profile.reviewsCount > 0 ? "#f59e0b" : "#e2e8f0"}
+                    />
                   ))}
                 </div>
-                <div className="ratings-sub-label">Based on {profile.reviewsCount} ratings</div>
+                <div className="ratings-sub-label">Based on {profile.reviewsCount} rating{profile.reviewsCount !== 1 ? "s" : ""}</div>
 
                 <div className="rating-bars-breakdown">
-                  {[5.0, 4.0, 3.0, 2.0, 1.0].map((stars) => (
-                    <div key={stars} className="rating-breakdown-row">
-                      <span className="row-star-label">{stars.toFixed(1)}</span>
-                      <div className="row-bar-track">
-                        <div className="row-bar-fill" style={{ width: "0%" }}></div>
+                  {[5, 4, 3, 2, 1].map((star) => {
+                    const count = reviewStats.distribution?.[star] || 0;
+                    const pct = profile.reviewsCount > 0 ? Math.round((count / profile.reviewsCount) * 100) : 0;
+                    return (
+                      <div key={star} className="rating-breakdown-row">
+                        <span className="row-star-label">{star}.0</span>
+                        <div className="row-bar-track">
+                          <div className="row-bar-fill" style={{ width: `${pct}%` }}></div>
+                        </div>
+                        <span className="row-count-val">{count}</span>
                       </div>
-                      <span className="row-count-val">0</span>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
               {/* Reviews List */}
               <div className="reviews-list-container">
-                <div className="empty-reviews-placeholder">
-                  <Sparkles size={48} color="#cbd5e1" className="empty-sparkle-icon" />
-                  <h3>No reviews Yet!</h3>
-                  <p>It looks like there are no records to show right now</p>
-                </div>
+                {reviews.length === 0 ? (
+                  <div className="empty-reviews-placeholder">
+                    <Sparkles size={48} color="#cbd5e1" className="empty-sparkle-icon" />
+                    <h3>No reviews yet!</h3>
+                    <p>Be the first to share your experience with this tutor.</p>
+                  </div>
+                ) : (
+                  <div className="reviews-list">
+                    {reviews.map((review) => (
+                      <div key={review.id} className="review-card">
+                        <div className="review-card__header">
+                          <div className="review-card__avatar">
+                            {review.studentName?.charAt(0)?.toUpperCase() || "S"}
+                          </div>
+                          <div className="review-card__meta">
+                            <span className="review-card__name">{review.studentName}</span>
+                            <span className="review-card__date">
+                              {new Date(review.createdAt).toLocaleDateString(undefined, {
+                                year: "numeric", month: "short", day: "numeric",
+                              })}
+                            </span>
+                          </div>
+                          <div className="review-card__stars">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                              <Star
+                                key={s}
+                                size={14}
+                                fill={s <= review.rating ? "#f59e0b" : "none"}
+                                color={s <= review.rating ? "#f59e0b" : "#cbd5e1"}
+                                strokeWidth={1.5}
+                              />
+                            ))}
+                          </div>
+                          {/* Delete button — only visible to the author */}
+                          {review.studentId === currentUserId && (
+                            <button
+                              className="review-card__delete-btn"
+                              onClick={() => handleDeleteReview(review.id)}
+                              aria-label="Delete review"
+                              title="Delete my review"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          )}
+                        </div>
+                        {review.comment && (
+                          <p className="review-card__comment">{review.comment}</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
 
             </div>

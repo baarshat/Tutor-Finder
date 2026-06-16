@@ -6,7 +6,15 @@ import BookingModal from "./BookingModal";
 import "./TutorCard.css";
 
 const TutorCard = ({
-  id, name, subjects, rating, reviews, hourlyRate, location, image, canBook = true,
+  id,
+  name,
+  subjects,
+  rating,
+  reviews,
+  hourlyRate,
+  location,
+  image,
+  canBook = true,
 }) => {
   const [isBookingOpen, setIsBookingOpen] = useState(false);
 
@@ -33,8 +41,26 @@ const TutorCard = ({
           <div className="tutor-info">
             <h3>{name}</h3>
             <div className="tutor-rating">
-              <Star size={16} fill="#fbbf24" color="#fbbf24" />
-              <span>{rating}</span>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Star
+                  key={star}
+                  size={14}
+                  fill={
+                    star <= Math.round(rating) && reviews > 0
+                      ? "#fbbf24"
+                      : "none"
+                  }
+                  color={
+                    star <= Math.round(rating) && reviews > 0
+                      ? "#fbbf24"
+                      : "#cbd5e1"
+                  }
+                  strokeWidth={1.5}
+                />
+              ))}
+              <span className="rating-value">
+                {reviews > 0 ? Number(rating).toFixed(1) : "—"}
+              </span>
               <span className="reviews">({reviews} reviews)</span>
             </div>
           </div>
@@ -67,14 +93,15 @@ const TutorCard = ({
       </div>
 
       {/* Portal renders the modal directly on document.body, escaping tutor-card's CSS */}
-      {isBookingOpen && ReactDOM.createPortal(
-        <BookingModal
-          tutor={{ id, name, subjects, location, hourlyRate }}
-          isOpen={isBookingOpen}
-          onClose={() => setIsBookingOpen(false)}
-        />,
-        document.body
-      )}
+      {isBookingOpen &&
+        ReactDOM.createPortal(
+          <BookingModal
+            tutor={{ id, name, subjects, location, hourlyRate }}
+            isOpen={isBookingOpen}
+            onClose={() => setIsBookingOpen(false)}
+          />,
+          document.body,
+        )}
     </div>
   );
 };

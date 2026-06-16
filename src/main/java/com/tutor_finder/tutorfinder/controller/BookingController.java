@@ -5,6 +5,8 @@ import com.tutor_finder.tutorfinder.dto.AvailabilityRequest;
 import com.tutor_finder.tutorfinder.dto.BookingRequest;
 import com.tutor_finder.tutorfinder.model.Booking;
 import com.tutor_finder.tutorfinder.model.User;
+import com.tutor_finder.tutorfinder.model.Review;
+import com.tutor_finder.tutorfinder.repository.ReviewRepository;
 import com.tutor_finder.tutorfinder.service.AvailabilityService;
 import com.tutor_finder.tutorfinder.service.BookingService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -24,6 +27,7 @@ public class BookingController {
 
     private final BookingService bookingService;
     private final AvailabilityService availabilityService;
+    private final ReviewRepository reviewRepository;
 
     @GetMapping("/availability")
     public ResponseEntity<List<AvailabilityDateSlots>> getAvailability(
@@ -107,6 +111,19 @@ public class BookingController {
         student.put("name", booking.getStudentName());
         student.put("email", booking.getStudentEmail());
         response.put("student", student);
+
+        // Include review status so frontend can show "Rate & Review" or the rating given
+        Optional<Review> reviewOpt = reviewRepository.findByBookingId(booking.getId());
+        response.put("reviewed", reviewOpt.isPresent());
+        if (reviewOpt.isPresent()) {
+            Review review = reviewOpt.get();
+            Map<String, Object> reviewData = new HashMap<>();
+            reviewData.put("id", review.getId());
+            reviewData.put("rating", review.getRating());
+            reviewData.put("comment", review.getComment());
+            reviewData.put("createdAt", review.getCreatedAt());
+            response.put("review", reviewData);
+        }
 
         return response;
     }
