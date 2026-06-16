@@ -125,7 +125,36 @@ const BookingsDashboardPage = () => {
       await loadBookings(activeTab);
     } catch (err) {
       toast.error(err?.message || "Failed to cancel booking.");
-      setError(err?.message || "Failed to cancel booking.");
+    }
+  };
+
+  const executeComplete = async (bookingId) => {
+    try {
+      const token = getAuthToken();
+      const res = await fetch(`${API_BASE}/api/bookings/${bookingId}/complete`, {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+
+      if (res.status === 401 || res.status === 403) {
+        localStorage.clear();
+        window.location.href = "/login";
+        return;
+      }
+
+      if (!res.ok) {
+        const message = await res.json().catch(() => ({}));
+        throw new Error(message?.message || "Failed to complete session.");
+      }
+
+      toast.success("Session marked as completed!");
+      await loadBookings(activeTab);
+    } catch (err) {
+      toast.error(err?.message || "Failed to complete session.");
     }
   };
 
@@ -183,6 +212,7 @@ const BookingsDashboardPage = () => {
             role === "TUTOR" ? booking.student : booking.tutor;
           const isPast = activeTab === "past";
           const isCancelled = booking.status === "CANCELLED";
+          const isCompleted = booking.status === "COMPLETED";
           const hasReview = booking.reviewed;
           const review = booking.review;
 
@@ -190,10 +220,12 @@ const BookingsDashboardPage = () => {
             <div key={booking.id} className="booking-card">
               <div className="booking-card__header">
                 <h3>{counterpart?.name || "Session"}</h3>
-                <span className="booking-status">{booking.status}</span>
+                <span className={`booking-status status-${booking.status.toLowerCase()}`}>
+                  {booking.status}
+                </span>
               </div>
               <p className="booking-card__subtitle">
-                with {counterpart?.name || "Student"}
+                {role === "TUTOR" ? `Student: ${booking.student?.name || booking.studentName}` : `Tutor: ${counterpart?.name}`}
               </p>
               <div className="booking-card__meta">
                 <div>
@@ -211,30 +243,34 @@ const BookingsDashboardPage = () => {
                 <p className="booking-card__notes">"{booking.notes}"</p>
               )}
 
-              {/* Upcoming: show cancel button */}
-              {activeTab === "upcoming" && (
-                <button
-                  type="button"
-                  className="secondary-btn booking-card__cancel"
-                  onClick={() => handleCancel(booking.id)}
-                >
-                  Cancel Booking
-                </button>
+              {/* Tutor Actions */}
+              {role === "TUTOR" && !isCancelled && !isCompleted && (
+                <div className="booking-card__actions">
+                  <button
+                    type="button"
+                    className="primary-btn booking-card__complete-btn"
+                    onClick={() => executeComplete(booking.id)}
+                  >
+                    Mark as Completed
+                  </button>
+                  {activeTab === "upcoming" && (
+                    <button
+                      type="button"
+                      className="secondary-btn booking-card__cancel-btn"
+                      onClick={() => handleCancel(booking.id)}
+                    >
+                      Cancel
+                    </button>
+                  )}
+                </div>
               )}
 
-              {/* Past + Student: show review section */}
-              {isPast && role === "STUDENT" && !isCancelled && (
+              {/* Student actions for past/completed sessions */}
+              {role === "STUDENT" && (
                 <div className="booking-card__review-section">
-                  {hasReview ? (
-                    <div className="booking-card__reviewed">
-                      <StarDisplay rating={review.rating} />
-                      {review.comment && (
-                        <p className="booking-card__review-comment">
-                          "{review.comment}"
-                        </p>
-                      )}
-                    </div>
-                  ) : (
+                  {isCancelled && <span className="cancelled-label">Cancelled</span>}
+                  
+                  {isCompleted && !hasReview && (
                     <button
                       type="button"
                       className="primary-btn booking-card__rate-btn"
@@ -243,6 +279,23 @@ const BookingsDashboardPage = () => {
                       <Star size={15} />
                       Rate &amp; Review
                     </button>
+                  )}
+
+                  {isCompleted && hasReview && (
+                    <div className="booking-card__reviewed">
+                      <StarDisplay rating={review.rating} />
+                      {review.comment && (
+                        <p className="booking-card__review-comment">
+                          "{review.comment}"
+                        </p>
+                      )}
+                    </div>
+                  )}
+
+                  {!isCompleted && !isCancelled && isPast && (
+                    <p className="awaiting-completion">
+                      Awaiting completion by tutor to review
+                    </p>
                   )}
                 </div>
               )}

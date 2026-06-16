@@ -44,14 +44,9 @@ public class ReviewService {
             throw new AccessDeniedException("You can only review your own sessions");
         }
 
-        // Must not be cancelled
-        if (booking.getStatus() == BookingStatus.CANCELLED) {
-            throw new IllegalArgumentException("Cannot review a cancelled booking");
-        }
-
-        // Session must have ended
-        if (!booking.getEndTime().isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException("You can only review sessions that have already taken place");
+        // Must be completed
+        if (booking.getStatus() != BookingStatus.COMPLETED) {
+            throw new IllegalArgumentException("You can only review sessions that have been marked as completed by the tutor");
         }
 
         // Prevent duplicate reviews

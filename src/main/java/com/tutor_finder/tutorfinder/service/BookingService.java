@@ -167,6 +167,49 @@ public class BookingService {
                 .toList();
     }
 
+    public Booking completeBooking(User user, Long bookingId) {
+        if (user == null) {
+            throw new IllegalArgumentException("User not authenticated");
+        }
+
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new NoSuchElementException("Booking not found"));
+
+        // Only the assigned tutor can mark as completed
+        boolean isTutorOwner = booking.getTutorProfile().getUser().getId().equals(user.getId());
+        if (!isTutorOwner) {
+            throw new AccessDeniedException("Only the assigned tutor can mark this session as completed");
+        }
+
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new IllegalArgumentException("Cannot complete a cancelled booking");
+        }
+
+        booking.setStatus(BookingStatus.COMPLETED);
+        Booking savedBooking = bookingRepository.save(booking);
+
+        // Notify student
+        String studentMessage = String.format(
+                Locale.US,
+                "Your session with %s on %s has been marked as completed. You can now leave a review.",
+                booking.getTutorProfile().getUser().getName(),
+                booking.getStartTime().toLocalDate()
+        );
+        notificationService.create(booking.getStudent(), studentMessage, NotificationType.GENERAL);
+
+        // Send Email to student
+        String emailSubject = "Session Completed - TutorFinder";
+        String studentEmailBody = String.format(
+                "Dear %s,\n\nYour session with tutor %s on %s has been marked as completed.\n\nYou can now provide a rating and review for this session by visiting your dashboard.\n\nBest regards,\nTutorFinder Team",
+                booking.getStudentName(),
+                booking.getTutorProfile().getUser().getName(),
+                booking.getStartTime().toLocalDate()
+        );
+        emailService.sendEmail(booking.getStudentEmail(), emailSubject, studentEmailBody);
+
+        return savedBooking;
+    }
+
     public Booking cancelBooking(User user, Long bookingId) {
         if (user == null) {
             throw new IllegalArgumentException("User not authenticated");

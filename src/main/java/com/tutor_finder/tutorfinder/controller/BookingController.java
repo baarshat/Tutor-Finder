@@ -90,6 +90,17 @@ public class BookingController {
         return ResponseEntity.ok(toBookingResponse(booking));
     }
 
+    @PutMapping("/{id}/complete")
+    public ResponseEntity<Map<String, Object>> completeBooking(
+            @AuthenticationPrincipal User user,
+            @PathVariable Long id) {
+        if (user == null) {
+            throw new AccessDeniedException("User not authenticated");
+        }
+        Booking booking = bookingService.completeBooking(user, id);
+        return ResponseEntity.ok(toBookingResponse(booking));
+    }
+
     private Map<String, Object> toBookingResponse(Booking booking) {
         Map<String, Object> response = new HashMap<>();
         response.put("id", booking.getId());
