@@ -13,6 +13,8 @@ import LandingPage from "./pages/LandingPage";
 import FindTutorPage from "./pages/FindTutorPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import ForgotPasswordPage from "./pages/ForgotPasswordPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import "./App.css";
@@ -42,7 +44,7 @@ import "./components/superadmin/Layout.css";
 function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
-  const hideNavbarFooter = ["/login", "/register"].includes(location.pathname);
+  const hideNavbarFooter = ["/login", "/register", "/forgot-password", "/reset-password"].includes(location.pathname);
   const API_BASE = "http://localhost:8080";
 
   const userStr = localStorage.getItem("user");
@@ -229,6 +231,8 @@ function AppContent() {
             <Route path="/tutors/:id" element={<TutorDetailPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/bookings" element={<LoginPage />} />
             <Route path="/tutor/availability" element={<LoginPage />} />
             <Route path="/settings" element={<LoginPage />} />

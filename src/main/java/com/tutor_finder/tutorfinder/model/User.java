@@ -48,6 +48,9 @@ public class User implements UserDetails {
 
     private boolean isVerified = false; // Relevant for Tutor verification
 
+    private String resetPasswordOtp;
+    private LocalDateTime resetPasswordOtpExpiry;
+
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @Builder.Default
     private Set<RefreshToken> refreshTokens = new HashSet<>();

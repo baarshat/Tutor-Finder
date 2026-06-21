@@ -13,6 +13,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.Random;
+
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -22,6 +25,7 @@ public class AuthenticationService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
+    private final EmailService emailService;
 
     public AuthenticationResponse register(RegisterRequest request) {
         if (repository.existsByEmail(request.getEmail())) {
@@ -79,5 +83,39 @@ public class AuthenticationService {
                             .refreshToken(request.getRefreshToken())
                             .build();
                 }).orElseThrow(() -> new RuntimeException("Refresh token is not in database!"));
+    }
+            
+    public void forgotPassword(String email) {
+        User user = repository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        String otp = String.format("%06d", new Random().nextInt(1000000));
+        user.setResetPasswordOtp(otp);
+        user.setResetPasswordOtpExpiry(LocalDateTime.now().plusMinutes(5));
+        repository.save(user);
+
+        emailService.sendEmail(
+                user.getEmail(),
+                "Password Reset OTP",
+                "Your OTP for password reset is: " + otp + ". It will expire in 5 minutes."
+        );
+    }
+
+    public void resetPassword(String email, String otp, String newPassword) {
+        User user = repository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        if (user.getResetPasswordOtp() == null || !user.getResetPasswordOtp().equals(otp)) {
+            throw new RuntimeException("Invalid OTP");
+        }
+
+        if (user.getResetPasswordOtpExpiry().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("OTP has expired");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setResetPasswordOtp(null);
+        user.setResetPasswordOtpExpiry(null);
+        repository.save(user);
     }
 }

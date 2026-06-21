@@ -149,9 +149,9 @@ const LoginPage = () => {
               <input type="checkbox" />
               <span>Remember me</span>
             </label>
-            <a href="#" className="forgot-password">
+            <Link to="/forgot-password" size={14} className="forgot-password">
               Forgot password?
-            </a>
+            </Link>
           </div>
 
           {serverError && (
