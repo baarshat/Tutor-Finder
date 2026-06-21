@@ -92,6 +92,12 @@ public class TutorController {
                     existingTutor.setNidUrl(tutorDetails.getNidUrl());
                     existingTutor.setMapLocation(tutorDetails.getMapLocation());
                     existingTutor.setStatus(tutorDetails.getStatus());
+                    existingTutor.setNativeLanguage(tutorDetails.getNativeLanguage());
+                    existingTutor.setLanguagesKnown(tutorDetails.getLanguagesKnown());
+                    existingTutor.setIntroduction(tutorDetails.getIntroduction());
+                    existingTutor.setEducation(tutorDetails.getEducation());
+                    existingTutor.setExperienceDescription(tutorDetails.getExperienceDescription());
+                    existingTutor.setTutorMode(tutorDetails.getTutorMode());
                     TutorProfile updated = tutorProfileService.saveTutorProfile(existingTutor);
                     return new ResponseEntity<>(updated, HttpStatus.OK);
                 })
@@ -123,6 +129,12 @@ public class TutorController {
         summary.put("nidUrl", tutor.getNidUrl());
         summary.put("mapLocation", tutor.getMapLocation());
         summary.put("status", tutor.getStatus());
+        summary.put("nativeLanguage", tutor.getNativeLanguage());
+        summary.put("languagesKnown", tutor.getLanguagesKnown());
+        summary.put("introduction", tutor.getIntroduction());
+        summary.put("education", tutor.getEducation());
+        summary.put("experienceDescription", tutor.getExperienceDescription());
+        summary.put("tutorMode", tutor.getTutorMode());
 
         // Real rating and review count from Review table
         Double avgRating = reviewRepository.findAverageRatingByTutorProfileId(tutor.getId());

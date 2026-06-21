@@ -53,4 +53,19 @@ public class TutorProfile {
 
     @Column(length = 20)
     private String status = "PENDING"; // PENDING, VERIFIED, REJECTED
+
+    private String nativeLanguage;
+
+    private String languagesKnown;
+
+    @Column(columnDefinition = "TEXT")
+    private String introduction;
+
+    @Column(columnDefinition = "TEXT")
+    private String education;
+
+    @Column(columnDefinition = "TEXT")
+    private String experienceDescription;
+
+    private String tutorMode;
 }

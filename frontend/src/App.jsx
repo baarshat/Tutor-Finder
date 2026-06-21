@@ -34,6 +34,7 @@ import PaymentFailurePage from "./pages/PaymentFailurePage";
 import BookingsDashboardPage from "./pages/BookingsDashboardPage";
 import TutorAvailabilityPage from "./pages/TutorAvailabilityPage";
 import TutorDetailPage from "./pages/TutorDetailPage";
+import SettingsPage from "./pages/SettingsPage";
 
 // CSS for superadmin layout
 import "./components/superadmin/Layout.css";
@@ -174,6 +175,10 @@ function AppContent() {
                       path="/tutor/availability"
                       element={<TutorAvailabilityPage />}
                     />
+                    <Route
+                      path="/settings"
+                      element={<SettingsPage />}
+                    />
 
                     {/* Superadmin Routes */}
                     <Route
@@ -226,6 +231,7 @@ function AppContent() {
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/bookings" element={<LoginPage />} />
             <Route path="/tutor/availability" element={<LoginPage />} />
+            <Route path="/settings" element={<LoginPage />} />
 
             {/* Superadmin Routes */}
             <Route

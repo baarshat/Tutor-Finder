@@ -43,6 +43,9 @@ public class User implements UserDetails {
 
     private String password;
 
+    @Column(columnDefinition = "LONGTEXT")
+    private String profilePicUrl;
+
     private boolean isVerified = false; // Relevant for Tutor verification
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

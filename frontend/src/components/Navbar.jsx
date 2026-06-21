@@ -8,13 +8,33 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
   const [notifications, setNotifications] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    const handleStorageChange = () => {
+      const storedUser = localStorage.getItem("user");
+      if (storedUser) {
+        setUser(JSON.parse(storedUser));
+      } else {
+        setUser(null);
+      }
+    };
+    handleStorageChange();
+    window.addEventListener("storage", handleStorageChange);
+
+    const handleOutsideClick = (e) => {
+      if (!e.target.closest(".user-avatar-container") && !e.target.closest(".notification-wrapper")) {
+        setAvatarDropdownOpen(false);
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("click", handleOutsideClick);
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange);
+      document.removeEventListener("click", handleOutsideClick);
+    };
   }, []);
 
   useEffect(() => {
@@ -242,8 +262,66 @@ const Navbar = () => {
                   </div>
                 )}
               </div>
-              <div className="user-avatar" title={user.name}>
-                {getInitials(user.name)}
+              <div className="user-avatar-container" title={user.name}>
+                {user.profilePicUrl ? (
+                  <img
+                    src={user.profilePicUrl}
+                    alt={user.name}
+                    className="user-avatar-img"
+                    onClick={() => setAvatarDropdownOpen((prev) => !prev)}
+                  />
+                ) : (
+                  <div
+                    className="user-avatar"
+                    onClick={() => setAvatarDropdownOpen((prev) => !prev)}
+                  >
+                    {getInitials(user.name)}
+                  </div>
+                )}
+
+                {avatarDropdownOpen && (
+                  <div className="avatar-dropdown-menu">
+                    <div className="dropdown-user-header">
+                      <span className="dropdown-user-name">{user.name}</span>
+                      <span className="dropdown-user-role">{user.role}</span>
+                    </div>
+                    <hr className="dropdown-divider" />
+                    <Link
+                      to="/settings"
+                      className="dropdown-item"
+                      onClick={() => setAvatarDropdownOpen(false)}
+                    >
+                      Personal Settings
+                    </Link>
+                    {user.role === "TUTOR" && (
+                      <Link
+                        to="/tutor/availability"
+                        className="dropdown-item"
+                        onClick={() => setAvatarDropdownOpen(false)}
+                      >
+                        Availability
+                      </Link>
+                    )}
+                    <Link
+                      to="/bookings"
+                      className="dropdown-item"
+                      onClick={() => setAvatarDropdownOpen(false)}
+                    >
+                      Bookings
+                    </Link>
+                    <hr className="dropdown-divider" />
+                    <button
+                      type="button"
+                      className="dropdown-item logout-btn"
+                      onClick={() => {
+                        setAvatarDropdownOpen(false);
+                        confirmLogout();
+                      }}
+                    >
+                      Log Out
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           ) : (
