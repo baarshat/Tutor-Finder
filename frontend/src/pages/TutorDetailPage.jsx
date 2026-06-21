@@ -218,7 +218,15 @@ export default function TutorDetailPage() {
               <div className="tutor-name-line">
                 <h1>{profile.name}</h1>
                 <CheckCircle className="verified-badge-icon" size={22} fill="#3b82f6" color="white" />
-                <span className="location-badge">
+                <span
+                  className="location-badge"
+                  style={{ cursor: "pointer" }}
+                  title="View on Google Maps"
+                  onClick={() => window.open(
+                    tutor.mapLocation || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(profile.location)}`,
+                    "_blank"
+                  )}
+                >
                   <MapPin size={16} /> {profile.location}
                 </span>
               </div>
