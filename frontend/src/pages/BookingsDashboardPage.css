@@ -1,14 +1,14 @@
 .bookings-page {
-  max-width: 1100px;
+  max-width: 1300px;
   margin: 0 auto;
-  padding: 3rem 2rem;
+  padding: 1.5rem 1rem;
 }
 
 .bookings-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1rem;
   gap: 1.5rem;
   flex-wrap: wrap;
 }
@@ -141,4 +141,25 @@
   font-size: 0.85rem;
   margin: 0;
   line-height: 1.5;
+}
+
+/* ---- Google Calendar Button ---- */
+.gcal-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.45rem 1rem;
+  border-radius: 10px;
+  border: 1.5px solid #4285f4;
+  background: transparent;
+  color: #4285f4;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: fit-content;
+}
+.gcal-btn:hover {
+  background: #4285f4;
+  color: #fff;
 }

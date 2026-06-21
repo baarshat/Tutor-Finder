@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Calendar, Clock, Star } from "lucide-react";
+import { Calendar, CalendarPlus, Clock, Star } from "lucide-react";
 import { toast } from "react-toastify";
-import ReactDOM from "react-dom";
 import SubmitReviewModal from "../components/SubmitReviewModal";
+import BookingsCalendar from "../components/BookingsCalendar";
 import "./BookingsDashboardPage.css";
 
 const API_BASE = "http://localhost:8080";
@@ -62,30 +62,35 @@ const BookingsDashboardPage = () => {
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const role = user?.role || "STUDENT";
 
-  const loadBookings = useCallback(async (type) => {
+  const loadBookings = useCallback(async () => {
     setLoading(true);
     setError("");
     try {
       const token = getAuthToken();
-      const res = await fetch(`${API_BASE}/api/bookings?type=${type}`, {
-        headers: {
-          "Content-Type": "application/json",
-          ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        },
-      });
+      const headers = {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      };
 
-      if (res.status === 401 || res.status === 403) {
+      const [upcomingRes, pastRes] = await Promise.all([
+        fetch(`${API_BASE}/api/bookings?type=upcoming`, { headers }),
+        fetch(`${API_BASE}/api/bookings?type=past`, { headers })
+      ]);
+
+      if (upcomingRes.status === 401 || pastRes.status === 401 || upcomingRes.status === 403 || pastRes.status === 403) {
         localStorage.clear();
         window.location.href = "/login";
         return;
       }
 
-      if (!res.ok) {
-        throw new Error("Failed to load bookings.");
-      }
-
-      const data = await res.json();
-      setBookings(Array.isArray(data) ? data : []);
+      const upcomingData = upcomingRes.ok ? await upcomingRes.json() : [];
+      const pastData = pastRes.ok ? await pastRes.json() : [];
+      
+      const combined = [
+        ...(Array.isArray(upcomingData) ? upcomingData : []),
+        ...(Array.isArray(pastData) ? pastData : [])
+      ];
+      setBookings(combined);
     } catch (err) {
       setError(err?.message || "Failed to load bookings.");
       setBookings([]);
@@ -95,8 +100,8 @@ const BookingsDashboardPage = () => {
   }, []);
 
   useEffect(() => {
-    loadBookings(activeTab);
-  }, [activeTab, loadBookings]);
+    loadBookings();
+  }, [loadBookings]);
 
   const executeCancel = async (bookingId) => {
     try {
@@ -122,7 +127,7 @@ const BookingsDashboardPage = () => {
       }
 
       toast.success("Booking cancelled successfully!");
-      await loadBookings(activeTab);
+      await loadBookings();
     } catch (err) {
       toast.error(err?.message || "Failed to cancel booking.");
     }
@@ -152,7 +157,7 @@ const BookingsDashboardPage = () => {
       }
 
       toast.success("Session marked as completed!");
-      await loadBookings(activeTab);
+      await loadBookings();
     } catch (err) {
       toast.error(err?.message || "Failed to complete session.");
     }
@@ -202,108 +207,8 @@ const BookingsDashboardPage = () => {
     );
   };
 
-  const bookingCards =
-    bookings.length === 0 ? (
-      <p>No {activeTab} bookings found.</p>
-    ) : (
-      <div className="booking-grid">
-        {bookings.map((booking) => {
-          const counterpart =
-            role === "TUTOR" ? booking.student : booking.tutor;
-          const isPast = activeTab === "past";
-          const isCancelled = booking.status === "CANCELLED";
-          const isCompleted = booking.status === "COMPLETED";
-          const hasReview = booking.reviewed;
-          const review = booking.review;
-
-          return (
-            <div key={booking.id} className="booking-card">
-              <div className="booking-card__header">
-                <h3>{counterpart?.name || "Session"}</h3>
-                <span className={`booking-status status-${booking.status.toLowerCase()}`}>
-                  {booking.status}
-                </span>
-              </div>
-              <p className="booking-card__subtitle">
-                {role === "TUTOR" ? `Student: ${booking.student?.name || booking.studentName}` : `Tutor: ${counterpart?.name}`}
-              </p>
-              <div className="booking-card__meta">
-                <div>
-                  <Calendar size={16} />
-                  <span>{formatDate(booking.startTime)}</span>
-                </div>
-                <div>
-                  <Clock size={16} />
-                  <span>
-                    {formatTimeRange(booking.startTime, booking.endTime)}
-                  </span>
-                </div>
-              </div>
-              {booking.notes && (
-                <p className="booking-card__notes">"{booking.notes}"</p>
-              )}
-
-              {/* Tutor Actions */}
-              {role === "TUTOR" && !isCancelled && !isCompleted && (
-                <div className="booking-card__actions">
-                  <button
-                    type="button"
-                    className="primary-btn booking-card__complete-btn"
-                    onClick={() => executeComplete(booking.id)}
-                  >
-                    Mark as Completed
-                  </button>
-                  {activeTab === "upcoming" && (
-                    <button
-                      type="button"
-                      className="secondary-btn booking-card__cancel-btn"
-                      onClick={() => handleCancel(booking.id)}
-                    >
-                      Cancel
-                    </button>
-                  )}
-                </div>
-              )}
-
-              {/* Student actions for past/completed sessions */}
-              {role === "STUDENT" && (
-                <div className="booking-card__review-section">
-                  {isCancelled && <span className="cancelled-label">Cancelled</span>}
-                  
-                  {isCompleted && !hasReview && (
-                    <button
-                      type="button"
-                      className="primary-btn booking-card__rate-btn"
-                      onClick={() => setReviewTarget(booking)}
-                    >
-                      <Star size={15} />
-                      Rate &amp; Review
-                    </button>
-                  )}
-
-                  {isCompleted && hasReview && (
-                    <div className="booking-card__reviewed">
-                      <StarDisplay rating={review.rating} />
-                      {review.comment && (
-                        <p className="booking-card__review-comment">
-                          "{review.comment}"
-                        </p>
-                      )}
-                    </div>
-                  )}
-
-                  {!isCompleted && !isCancelled && isPast && (
-                    <p className="awaiting-completion">
-                      Awaiting completion by tutor to review
-                    </p>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-    );
+  // The legacy card view has been removed.
+  // All bookings are now displayed in the calendar.
 
   return (
     <div className="bookings-page">
@@ -328,7 +233,20 @@ const BookingsDashboardPage = () => {
       </div>
 
       {error && <p className="booking-error">{error}</p>}
-      {loading ? <p>Loading bookings...</p> : bookingCards}
+      {loading ? (
+        <p>Loading bookings...</p>
+      ) : bookings.length === 0 ? (
+        <p>No {activeTab} bookings found.</p>
+      ) : (
+        <BookingsCalendar
+          bookings={bookings}
+          role={role}
+          activeTab={activeTab}
+          executeComplete={executeComplete}
+          handleCancel={handleCancel}
+          setReviewTarget={setReviewTarget}
+        />
+      )}
 
       {/* Review modal portal */}
       {reviewTarget &&

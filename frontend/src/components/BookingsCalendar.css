@@ -1,0 +1,369 @@
+.bcal {
+  display: flex;
+  gap: 2rem;
+  background: var(--surface, #ffffff);
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.1));
+  font-family: inherit;
+  margin-top: 0.5rem;
+  align-items: flex-start;
+}
+
+.bcal__main {
+  flex: 2.2;
+  min-width: 0; /* Prevents flex blowout */
+}
+
+.bcal__sidebar {
+  flex: 1.2;
+  min-width: 300px;
+  max-height: 700px;
+  overflow-y: auto;
+  position: sticky;
+  top: 1rem;
+}
+
+
+.bcal__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.bcal__title {
+  margin: 0;
+  font-size: 1.25rem;
+  color: var(--text-dark, #1e293b);
+  font-weight: 600;
+}
+
+.bcal__nav {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.bcal__nav-btn, .bcal__today-btn {
+  background: transparent;
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted, #64748b);
+  transition: all 0.2s;
+}
+
+.bcal__nav-btn {
+  padding: 0.4rem;
+}
+
+.bcal__today-btn {
+  padding: 0.4rem 0.8rem;
+  font-weight: 500;
+  font-size: 0.875rem;
+}
+
+.bcal__nav-btn:hover, .bcal__today-btn:hover {
+  background: var(--background, #f8fafc);
+  color: var(--text-dark, #334155);
+}
+
+.bcal__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 4px;
+}
+
+.bcal__days-header {
+  margin-bottom: 0.5rem;
+}
+
+.bcal__day-name {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+
+
+.bcal__cell {
+  aspect-ratio: 1;
+  min-height: 50px;
+  border-radius: 10px;
+  padding: 0.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  border: 1px solid transparent;
+  background: #f8fafc;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bcal__cell:hover {
+  background: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.bcal__cell--muted {
+  background: transparent;
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.bcal__cell--today {
+  border-color: var(--primary, #3b82f6);
+  background: #eff6ff;
+}
+
+.bcal__cell--today .bcal__cell-num {
+  color: var(--primary, #3b82f6);
+  font-weight: 700;
+}
+
+.bcal__cell--selected {
+  border-color: var(--text-dark, #1e293b);
+  background: #f1f5f9;
+}
+
+.bcal__cell--highlighted {
+  border-color: rgba(59, 130, 246, 0.4);
+  background: rgba(59, 130, 246, 0.05);
+}
+
+.bcal__cell-num {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-dark, #334155);
+  margin-bottom: auto;
+}
+
+.bcal__dots {
+  display: flex;
+  gap: 3px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  width: 100%;
+}
+
+.bcal__dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.bcal__dot-more {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-muted, #64748b);
+}
+
+.bcal__legend {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border, #e2e8f0);
+  flex-wrap: wrap;
+}
+
+.bcal__legend-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  color: var(--text-muted, #64748b);
+  font-weight: 500;
+}
+
+.bcal__legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* Detail panel */
+.bcal__detail {
+  background: #f8fafc;
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid var(--border, #e2e8f0);
+  animation: slideUp 0.3s ease;
+}
+
+.bcal__sidebar-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 350px;
+  background: #f8fafc;
+  border-radius: 12px;
+  border: 1px dashed var(--border, #cbd5e1);
+  padding: 2rem;
+  color: #64748b;
+  font-size: 0.95rem;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.bcal__detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.75rem;
+}
+
+.bcal__detail-header h4 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #1e293b;
+}
+
+.bcal__detail-close {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: #64748b;
+  padding: 0.25rem;
+  display: flex;
+  align-items: center;
+  border-radius: 4px;
+}
+.bcal__detail-close:hover {
+  background: #e2e8f0;
+  color: #1e293b;
+}
+
+.bcal__detail-empty {
+  color: #64748b;
+  margin: 0;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.bcal__detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.bcal__event-card {
+  display: flex;
+  background: #ffffff;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  border: 1px solid #e2e8f0;
+}
+
+.bcal__event-stripe {
+  width: 6px;
+  flex-shrink: 0;
+}
+
+.bcal__event-body {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  flex: 1;
+}
+
+.bcal__event-name {
+  font-weight: 600;
+  color: #1e293b;
+  font-size: 1rem;
+}
+
+.bcal__event-time {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.85rem;
+  color: #475569;
+}
+
+.bcal__event-notes {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.85rem;
+  color: #64748b;
+  font-style: italic;
+  background: #f8fafc;
+  padding: 0.5rem;
+  border-radius: 6px;
+}
+
+.bcal__event-status {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Interaction Actions */
+.bcal__event-actions {
+  margin-top: 0.75rem;
+}
+.bcal__action-group {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.bcal__rate-btn {
+  margin-top: 0.5rem;
+}
+.no-border-top {
+  border-top: none !important;
+  padding-top: 0 !important;
+}
+.bcal__star-sm {
+  align-items: center;
+}
+
+@media (max-width: 860px) {
+  .bcal {
+    flex-direction: column;
+  }
+  .bcal__sidebar {
+    width: 100%;
+    min-width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .bcal__cell {
+    min-height: 40px;
+    padding: 0.25rem;
+  }
+  .bcal__cell-num {
+    font-size: 0.75rem;
+  }
+  .bcal__dots {
+    gap: 2px;
+  }
+  .bcal__dot {
+    width: 6px;
+    height: 6px;
+  }
+  .bcal {
+    padding: 1rem;
+    gap: 1rem;
+  }
+}
