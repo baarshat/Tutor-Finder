@@ -17,45 +17,6 @@ import TutorCard from "../components/TutorCard";
 import "./LandingPage.css";
 
 const LandingPage = () => {
-  const featuredTutors = [
-    {
-      id: 101,
-      name: "Anjali Sharma",
-      subjects: ["A-Levels Mathematics", "Physics"],
-      rating: 4.9,
-      reviews: 45,
-      hourlyRate: 1200,
-      location: "Kathmandu",
-    },
-    {
-      id: 102,
-      name: "Rohan Adhikari",
-      subjects: ["IB Economics", "Business"],
-      rating: 4.8,
-      reviews: 32,
-      hourlyRate: 1500,
-      location: "Kathmandu",
-    },
-    {
-      id: 103,
-      name: "Sunita Gurung",
-      subjects: ["NEB Grade 11/12 Chemistry"],
-      rating: 4.7,
-      reviews: 28,
-      hourlyRate: 900,
-      location: "Kathmandu",
-    },
-    {
-      id: 104,
-      name: "Bibek Thapa",
-      subjects: ["A-Levels Computer Science"],
-      rating: 5.0,
-      reviews: 15,
-      hourlyRate: 1100,
-      location: "Kathmandu",
-    },
-  ];
-
   return (
     <div className="landing-page">
       {/* Hero Section */}
@@ -70,7 +31,9 @@ const LandingPage = () => {
             <Link to="/find-tutors">
               <button className="primary-btn">Find a Tutor</button>
             </Link>
-            <button className="secondary-btn">Become a Tutor</button>
+            <Link to="/register">
+              <button className="secondary-btn">Become a Tutor</button>
+            </Link>
           </div>
         </div>
         <div className="hero-image">
@@ -167,24 +130,6 @@ const LandingPage = () => {
         </div>
       </section>
 
-      {/* Featured Tutors Section */}
-      <section className="featured-tutors">
-        <div className="section-header">
-          <h2>Top Tutors in Kathmandu</h2>
-          <p>Highly recommended educators currently available in your area.</p>
-        </div>
-        <div className="tutors-grid">
-          {featuredTutors.map((tutor) => (
-            <TutorCard key={tutor.id} {...tutor} canBook={false} />
-          ))}
-        </div>
-        <div className="view-all-container">
-          <Link to="/find-tutors">
-            <button className="secondary-btn">View All Tutors</button>
-          </Link>
-        </div>
-      </section>
-
       {/* Become a Tutor Section */}
       <section className="become-tutor-section">
         <div className="promo-section">
@@ -199,7 +144,6 @@ const LandingPage = () => {
             </p>
             <div className="tutor-benefits">
               <div className="benefit-item">
-                <Calendar size={20} color="var(--primary)" />
                 <div>
                   <h4>Flexibility</h4>
                   <p>
@@ -209,7 +153,6 @@ const LandingPage = () => {
                 </div>
               </div>
               <div className="benefit-item">
-                <DollarSign size={20} color="var(--primary)" />
                 <div>
                   <h4>Set Your Rates</h4>
                   <p>
@@ -219,7 +162,6 @@ const LandingPage = () => {
                 </div>
               </div>
               <div className="benefit-item">
-                <Globe size={20} color="var(--primary)" />
                 <div>
                   <h4>Local & Global Reach</h4>
                   <p>
@@ -229,7 +171,6 @@ const LandingPage = () => {
                 </div>
               </div>
               <div className="benefit-item">
-                <GraduationCap size={20} color="var(--primary)" />
                 <div>
                   <h4>Professional Growth</h4>
                   <p>
@@ -240,6 +181,9 @@ const LandingPage = () => {
               </div>
             </div>
             <button className="primary-btn">Start Teaching Today</button>
+            {/* <Link to="/register">
+              <button className="primary-btn">Start Teaching Today</button>
+            </Link> */}
           </div>
         </div>
       </section>

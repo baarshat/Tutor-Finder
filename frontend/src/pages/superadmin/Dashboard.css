@@ -131,7 +131,6 @@
 .sa-action-btn:hover {
   background: rgba(131, 184, 34, 0.08);
   border-color: #83B822;
-  transform: translate(2px, 2px);
 }
 
 .sa-tables-grid {

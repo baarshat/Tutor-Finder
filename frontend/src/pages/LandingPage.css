@@ -85,17 +85,10 @@
   background: var(--background);
   padding: 40px 32px;
   border-radius: 24px;
-  box-shadow: var(--shadow-hard);
   border: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
-  transition: all 0.3s ease;
-}
-
-.feature-card:hover {
-  transform: translate(6px, 6px);
-  box-shadow: var(--shadow-hard-hover);
 }
 
 .feature-icon {

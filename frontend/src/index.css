@@ -14,10 +14,10 @@
   --tertiary: #F4F7ED;
   --border: #e5e7eb;
 
-  /* Elevation: Zero-Blur Hard Offsets */
-  --shadow-hard: 10px 10px 0px rgba(131, 184, 34, 0.15);
-  --shadow-hard-secondary: 10px 10px 0px rgba(87, 34, 184, 0.1);
-  --shadow-hard-hover: 4px 4px 0px rgba(131, 184, 34, 0.15);
+  /* Elevation */
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1);
 
   color: var(--text);
   background-color: var(--background);

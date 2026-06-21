@@ -58,7 +58,6 @@
 .sa-nav-link:hover {
   background-color: rgba(131, 184, 34, 0.1);
   color: #83B822;
-  transform: translateY(-2px);
 }
 
 .sa-nav-link--active {

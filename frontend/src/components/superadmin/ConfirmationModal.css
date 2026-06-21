@@ -70,7 +70,6 @@
 }
 
 .sa-modal__confirm--primary:hover {
-  transform: translate(2px, 2px);
   box-shadow: 2px 2px 0px rgba(131, 184, 34, 0.2);
 }
 
@@ -81,7 +80,6 @@
 }
 
 .sa-modal__confirm--danger:hover {
-  transform: translate(2px, 2px);
   box-shadow: 2px 2px 0px rgba(239, 68, 68, 0.2);
 }
 
