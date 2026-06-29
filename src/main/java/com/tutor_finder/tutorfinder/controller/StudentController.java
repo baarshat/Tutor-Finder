@@ -88,6 +88,8 @@ public class StudentController {
             summary.put("userName", user.getName());
             summary.put("userEmail", user.getEmail());
             summary.put("userPhone", user.getPhone());
+            summary.put("role", "STUDENT");
+            summary.put("profilePicUrl", user.getProfilePicUrl());
         }
 
         return summary;

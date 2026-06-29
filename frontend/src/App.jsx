@@ -37,6 +37,7 @@ import BookingsDashboardPage from "./pages/BookingsDashboardPage";
 import TutorAvailabilityPage from "./pages/TutorAvailabilityPage";
 import TutorDetailPage from "./pages/TutorDetailPage";
 import SettingsPage from "./pages/SettingsPage";
+import MessagingPage from "./pages/MessagingPage";
 
 // CSS for superadmin layout
 import "./components/superadmin/Layout.css";
@@ -181,6 +182,10 @@ function AppContent() {
                       path="/settings"
                       element={<SettingsPage />}
                     />
+                    <Route
+                      path="/messages"
+                      element={<MessagingPage />}
+                    />
 
                     {/* Superadmin Routes */}
                     <Route
@@ -236,6 +241,7 @@ function AppContent() {
             <Route path="/bookings" element={<LoginPage />} />
             <Route path="/tutor/availability" element={<LoginPage />} />
             <Route path="/settings" element={<LoginPage />} />
+            <Route path="/messages" element={<LoginPage />} />
 
             {/* Superadmin Routes */}
             <Route

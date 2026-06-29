@@ -76,16 +76,14 @@ function Sidebar() {
             </NavLink>
           ))}
 
-          {/* Messages Placeholder Icon */}
-          {role === "SUPERADMIN" && (
-            <NavLink
-              to="/superadmin/messages"
-              className={navLinkClass}
-              title="Messages & Support"
-            >
-              <MessageSquare size={24} strokeWidth={2} />
-            </NavLink>
-          )}
+          {/* Messages Icon */}
+          <NavLink
+            to="/messages"
+            className={navLinkClass}
+            title="Messages"
+          >
+            <MessageSquare size={24} strokeWidth={2} />
+          </NavLink>
         </div>
 
         <button
