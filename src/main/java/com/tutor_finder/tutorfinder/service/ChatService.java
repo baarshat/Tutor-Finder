@@ -70,6 +70,7 @@ public class ChatService {
                     .profilePicUrl(partner.getProfilePicUrl())
                     .lastMessage(latest != null ? latest.getContent() : "")
                     .lastMessageTime(latest != null ? latest.getTimestamp() : null)
+                    .lastMessageSenderId(latest != null ? latest.getSender().getId() : null)
                     .build();
         })
         .sorted(Comparator.comparing(ConversationDTO::getLastMessageTime,

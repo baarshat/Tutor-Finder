@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Search, MessageSquare, Users, Send, ArrowLeft } from "lucide-react";
+import { Search, MessageSquare, Users, Send, ArrowLeft, SquarePen } from "lucide-react";
 import "./MessagingPage.css";
 
 const API_BASE = "http://localhost:8080";
@@ -422,15 +422,15 @@ const MessagingPage = () => {
       {/* Sidebar */}
       <div className={`messaging-sidebar ${selectedChat ? "hide-on-mobile" : ""}`}>
         <div className="sidebar-header">
-          <div className="user-profile">
-            <div className="avatar-placeholder">{getInitial(userName)}</div>
-            <span className="user-name">{userName}</span>
-          </div>
+          <h2 className="chats-title">Chats</h2>
+          <button className="compose-btn" title="New message">
+            <SquarePen size={20} />
+          </button>
         </div>
 
         <div className="sidebar-search">
           <div className="search-input-wrapper" ref={searchInputRef}>
-            <Search size={18} className="search-icon" />
+            <Search size={16} className="search-icon" />
             <input
               id="tutor-search-input"
               type="text"
@@ -490,74 +490,58 @@ const MessagingPage = () => {
           )}
         </div>
 
-        <div className="sidebar-tabs">
-          <button
-            className={`tab-btn ${activeTab === "messages" ? "active" : ""}`}
-            onClick={() => setActiveTab("messages")}
-          >
-            <MessageSquare size={20} />
-          </button>
-          <button
-            className={`tab-btn ${activeTab === "contacts" ? "active" : ""}`}
-            onClick={() => setActiveTab("contacts")}
-          >
-            <Users size={20} />
-          </button>
-        </div>
-
         <div className="sidebar-content">
-          {activeTab === "messages" && (
-            <>
-              {conversations.length === 0 ? (
-                <div className="empty-state">
-                  <div className="empty-icon-wrapper">
-                    <MessageSquare size={48} className="empty-icon" />
-                  </div>
-                  <p>No conversations yet</p>
-                  <p className="empty-hint">Search for a tutor or student to start chatting</p>
-                </div>
-              ) : (
-                <div className="conversation-list">
-                  {conversations.map((conv) => (
-                    <div
-                      key={conv.userId}
-                      className={`conversation-item ${
-                        selectedChat?.userId === conv.userId ? "active" : ""
-                      }`}
-                      onClick={() => handleSelectConversation(conv)}
-                    >
-                      <div className="conversation-avatar">
-                        {conv.profilePicUrl ? (
-                          <img
-                            src={`data:image/jpeg;base64,${conv.profilePicUrl}`}
-                            alt={conv.userName}
-                          />
-                        ) : (
-                          <div className="avatar-placeholder">
-                            {getInitial(conv.userName)}
-                          </div>
-                        )}
-                      </div>
-                      <div className="conversation-info">
-                        <div className="conversation-top">
-                          <span className="conversation-name">{conv.userName}</span>
-                          <span className="conversation-time">
-                            {formatTime(conv.lastMessageTime)}
-                          </span>
+          {conversations.length === 0 ? (
+            <div className="empty-state">
+              <div className="empty-icon-wrapper">
+                <MessageSquare size={48} className="empty-icon" />
+              </div>
+              <p>No conversations yet</p>
+              <p className="empty-hint">Search for a tutor or student to start chatting</p>
+            </div>
+          ) : (
+            <div className="conversation-list">
+              {conversations.map((conv) => {
+                const isOwnMessage = conv.lastMessageSenderId === currentUserId;
+                const lastMsgPreview = conv.lastMessage
+                  ? (isOwnMessage ? "You: " : "") +
+                    (conv.lastMessage.length > 30
+                      ? conv.lastMessage.slice(0, 30) + "..."
+                      : conv.lastMessage)
+                  : "Start a conversation";
+                return (
+                  <div
+                    key={conv.userId}
+                    className={`conversation-item ${
+                      selectedChat?.userId === conv.userId ? "active" : ""
+                    }`}
+                    onClick={() => handleSelectConversation(conv)}
+                  >
+                    <div className="conversation-avatar">
+                      {conv.profilePicUrl ? (
+                        <img
+                          src={`data:image/jpeg;base64,${conv.profilePicUrl}`}
+                          alt={conv.userName}
+                        />
+                      ) : (
+                        <div className="avatar-placeholder">
+                          {getInitial(conv.userName)}
                         </div>
-                        <p className="conversation-last-msg">
-                          {conv.lastMessage
-                            ? conv.lastMessage.length > 35
-                              ? conv.lastMessage.slice(0, 35) + "..."
-                              : conv.lastMessage
-                            : "Start a conversation"}
-                        </p>
-                      </div>
+                      )}
                     </div>
-                  ))}
-                </div>
-              )}
-            </>
+                    <div className="conversation-info">
+                      <span className="conversation-name">{conv.userName}</span>
+                      <p className="conversation-last-msg">
+                        {lastMsgPreview}
+                        {conv.lastMessageTime && (
+                          <span className="conversation-time"> &middot; {formatTime(conv.lastMessageTime)}</span>
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           )}
         </div>
       </div>
@@ -609,7 +593,7 @@ const MessagingPage = () => {
                 <div className="chat-loading">Loading messages...</div>
               ) : messages.length === 0 ? (
                 <div className="chat-empty">
-                  <p>No messages yet. Say hello! 👋</p>
+                  <p>No messages yet. Say hello!</p>
                 </div>
               ) : (
                 messages.map((msg, idx) => (

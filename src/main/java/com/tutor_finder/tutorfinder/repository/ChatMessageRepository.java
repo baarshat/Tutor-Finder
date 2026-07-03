@@ -18,8 +18,9 @@ public interface ChatMessageRepository extends JpaRepository<ChatMessage, Long> 
            "ORDER BY m.timestamp DESC")
     Page<ChatMessage> findChatHistory(@Param("user1") User user1, @Param("user2") User user2, Pageable pageable);
 
-    @Query("SELECT DISTINCT CASE WHEN m.sender = :user THEN m.recipient ELSE m.sender END " +
-           "FROM ChatMessage m WHERE m.sender = :user OR m.recipient = :user")
+    @Query("SELECT DISTINCT u FROM User u WHERE u IN " +
+           "(SELECT m.recipient FROM ChatMessage m WHERE m.sender = :user) " +
+           "OR u IN (SELECT m.sender FROM ChatMessage m WHERE m.recipient = :user)")
     List<User> findConversationPartners(@Param("user") User user);
 
     @Query("SELECT m FROM ChatMessage m WHERE " +

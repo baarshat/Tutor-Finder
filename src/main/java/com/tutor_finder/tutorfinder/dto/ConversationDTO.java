@@ -17,4 +17,5 @@ public class ConversationDTO {
     private String profilePicUrl;
     private String lastMessage;
     private LocalDateTime lastMessageTime;
+    private Long lastMessageSenderId;
 }
