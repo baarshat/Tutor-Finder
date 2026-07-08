@@ -9,10 +9,6 @@ const languageOptions = [
   "English", "Nepali", "Spanish", "French", "German", "Chinese", "Hindi", "Japanese"
 ];
 
-const tutorModes = [
-  "Online Only", "In-Person Only", "Hybrid (Both Online & In-Person)"
-];
-
 export default function SettingsPage() {
   const [user, setUser] = useState(null);
   const [tutorProfile, setTutorProfile] = useState(null);
@@ -31,16 +27,25 @@ export default function SettingsPage() {
   // Tutor Specific State
   const [tutorData, setTutorData] = useState({
     nativeLanguage: "",
-    tutorMode: "",
     languagesKnown: "",
     introduction: "",
-    qualifications: "", // Where did you graduate
+    qualifications: "",
     experienceYears: "",
     experienceDescription: "",
     subjects: "",
     location: "",
     hourlyRate: "",
   });
+
+  // Structured Education State
+  const [educationData, setEducationData] = useState({
+    plusTwo: { institution: "", faculty: "", yearFrom: "", yearTo: "" },
+    bachelors: { degree: "", institution: "", yearFrom: "", yearTo: "", hasDone: true },
+    masters: { degree: "", institution: "", yearFrom: "", yearTo: "", hasDone: false },
+  });
+
+  const setEdu = (level, field, value) =>
+    setEducationData(prev => ({ ...prev, [level]: { ...prev[level], [field]: value } }));
 
   // Password State
   const [passwordData, setPasswordData] = useState({
@@ -114,7 +119,6 @@ export default function SettingsPage() {
           setTutorProfile(tProfile);
           setTutorData({
             nativeLanguage: tProfile.nativeLanguage || "",
-            tutorMode: tProfile.tutorMode || "",
             languagesKnown: tProfile.languagesKnown || "",
             introduction: tProfile.introduction || "",
             qualifications: tProfile.qualifications || "",
@@ -124,6 +128,19 @@ export default function SettingsPage() {
             location: tProfile.location || "",
             hourlyRate: tProfile.hourlyRate || "",
           });
+          // Parse structured education JSON if available
+          if (tProfile.education) {
+            try {
+              const parsed = JSON.parse(tProfile.education);
+              if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+                setEducationData(prev => ({
+                  plusTwo: { ...prev.plusTwo, ...(parsed.plusTwo || {}) },
+                  bachelors: { ...prev.bachelors, hasDone: true, ...(parsed.bachelors || {}) },
+                  masters: { ...prev.masters, ...(parsed.masters || {}) },
+                }));
+              }
+            } catch { /* ignore invalid JSON */ }
+          }
         }
       }
     } catch (err) {
@@ -192,8 +209,8 @@ export default function SettingsPage() {
       if (user.role === "TUTOR" && tutorProfile) {
         const payload = {
           ...tutorProfile,
+          profilePicUrl: updatedUser.profilePicUrl ?? tutorProfile.profilePicUrl,
           nativeLanguage: tutorData.nativeLanguage,
-          tutorMode: tutorData.tutorMode,
           languagesKnown: tutorData.languagesKnown,
           introduction: tutorData.introduction,
           qualifications: tutorData.qualifications,
@@ -202,6 +219,8 @@ export default function SettingsPage() {
           subjects: tutorData.subjects,
           location: tutorData.location,
           hourlyRate: parseFloat(tutorData.hourlyRate) || 0,
+          // Serialize structured education as JSON
+          education: JSON.stringify(educationData),
         };
 
         const tutorRes = await fetch(`${API_BASE}/tutors/${tutorProfile.id}`, {
@@ -410,10 +429,237 @@ export default function SettingsPage() {
                 {/* Tutor Specific Details */}
                 {user?.role === "TUTOR" && (
                   <>
+                    {/* ── 1. BRIEF INTRODUCTION ── */}
                     <hr className="settings-divider" />
                     <div className="settings-section">
-                      <h2>Tutor Profile & Availability Info</h2>
-                      
+                      <h2>A Brief Introduction</h2>
+                      <p className="section-desc">Write a compelling introduction that helps students understand who you are and your teaching style.</p>
+                      <div className="input-group full-width">
+                        <div className="simulated-editor-container">
+                          <div className="editor-toolbar">
+                            <button type="button" className="toolbar-btn font-bold-style">B</button>
+                            <button type="button" className="toolbar-btn font-italic-style">I</button>
+                            <button type="button" className="toolbar-btn font-underline-style">U</button>
+                            <span className="toolbar-separator">|</span>
+                            <button type="button" className="toolbar-btn">List</button>
+                            <button type="button" className="toolbar-btn">Num</button>
+                            <button type="button" className="toolbar-btn">Link</button>
+                            <span className="toolbar-separator">|</span>
+                            <button type="button" className="toolbar-btn">Undo</button>
+                            <button type="button" className="toolbar-btn">Redo</button>
+                            <button type="button" className="toolbar-btn">Clear</button>
+                            <button type="button" className="ai-write-btn" onClick={() => toast.info("AI Write helper feature coming soon!")}>
+                              ✨ Write with AI
+                            </button>
+                          </div>
+                          <textarea
+                            required
+                            rows={8}
+                            className="editor-textarea"
+                            value={tutorData.introduction}
+                            onChange={e => setTutorData({ ...tutorData, introduction: e.target.value })}
+                            placeholder="Add your introduction (Minimum 300 words required)..."
+                          />
+                        </div>
+                        <div className="word-count-status-row">
+                          <span className={`word-count-indicator ${isIntroValid ? "valid" : "invalid"}`}>
+                            {isIntroValid ? (
+                              <><CheckCircle2 size={14} /> Meets minimum word requirement</>
+                            ) : (
+                              <><AlertTriangle size={14} /> Minimum 300 words required.</>
+                            )}
+                          </span>
+                          <span className="word-count-badge">Words: {wordCount}/300</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ── 2. EDUCATION ── */}
+                    <hr className="settings-divider" />
+                    <div className="settings-section">
+                      <h2>Education</h2>
+                      <p className="section-desc">List your academic qualifications from +2 through to your highest degree.</p>
+
+                      {/* +2 */}
+                      <div className="edu-level-card">
+                        <h3 className="edu-level-title">+2 / Higher Secondary</h3>
+                        <div className="settings-form-grid">
+                          <div className="input-group">
+                            <label>Institution *</label>
+                            <input
+                              type="text"
+                              required
+                              value={educationData.plusTwo.institution}
+                              onChange={e => setEdu("plusTwo", "institution", e.target.value)}
+                              placeholder="e.g. Kathmandu Model Secondary School"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Faculty / Stream *</label>
+                            <input
+                              type="text"
+                              required
+                              value={educationData.plusTwo.faculty}
+                              onChange={e => setEdu("plusTwo", "faculty", e.target.value)}
+                              placeholder="e.g. Science, Management, Humanities"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Year From</label>
+                            <input
+                              type="text"
+                              value={educationData.plusTwo.yearFrom}
+                              onChange={e => setEdu("plusTwo", "yearFrom", e.target.value)}
+                              placeholder="e.g. 2018"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Year To</label>
+                            <input
+                              type="text"
+                              value={educationData.plusTwo.yearTo}
+                              onChange={e => setEdu("plusTwo", "yearTo", e.target.value)}
+                              placeholder="e.g. 2020"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Bachelors */}
+                      <div className="edu-level-card" style={{ marginTop: "1.25rem" }}>
+                        <h3 className="edu-level-title">Bachelor's Degree</h3>
+                        <div className="settings-form-grid">
+                          <div className="input-group">
+                            <label>Degree / Program *</label>
+                            <input
+                              type="text"
+                              required
+                              value={educationData.bachelors.degree}
+                              onChange={e => setEdu("bachelors", "degree", e.target.value)}
+                              placeholder="e.g. BSc Computer Science"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Institution *</label>
+                            <input
+                              type="text"
+                              required
+                              value={educationData.bachelors.institution}
+                              onChange={e => setEdu("bachelors", "institution", e.target.value)}
+                              placeholder="e.g. Tribhuvan University, Amrit Science Campus"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Year From</label>
+                            <input
+                              type="text"
+                              value={educationData.bachelors.yearFrom}
+                              onChange={e => setEdu("bachelors", "yearFrom", e.target.value)}
+                              placeholder="e.g. 2020"
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>Year To</label>
+                            <input
+                              type="text"
+                              value={educationData.bachelors.yearTo}
+                              onChange={e => setEdu("bachelors", "yearTo", e.target.value)}
+                              placeholder="e.g. 2024"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Masters */}
+                      <div className="edu-level-card" style={{ marginTop: "1.25rem" }}>
+                        <div className="edu-level-title-row">
+                          <h3 className="edu-level-title">Master's Degree</h3>
+                          <label className="edu-toggle-label">
+                            <input
+                              type="checkbox"
+                              checked={educationData.masters.hasDone}
+                              onChange={e => setEdu("masters", "hasDone", e.target.checked)}
+                            />
+                            <span>I have completed / am pursuing a Master's</span>
+                          </label>
+                        </div>
+                        {educationData.masters.hasDone && (
+                          <div className="settings-form-grid">
+                            <div className="input-group">
+                              <label>Degree / Program</label>
+                              <input
+                                type="text"
+                                value={educationData.masters.degree}
+                                onChange={e => setEdu("masters", "degree", e.target.value)}
+                                placeholder="e.g. MSc Data Science"
+                              />
+                            </div>
+                            <div className="input-group">
+                              <label>Institution</label>
+                              <input
+                                type="text"
+                                value={educationData.masters.institution}
+                                onChange={e => setEdu("masters", "institution", e.target.value)}
+                                placeholder="e.g. Tribhuvan University"
+                              />
+                            </div>
+                            <div className="input-group">
+                              <label>Year From</label>
+                              <input
+                                type="text"
+                                value={educationData.masters.yearFrom}
+                                onChange={e => setEdu("masters", "yearFrom", e.target.value)}
+                                placeholder="e.g. 2024"
+                              />
+                            </div>
+                            <div className="input-group">
+                              <label>Year To (or "current")</label>
+                              <input
+                                type="text"
+                                value={educationData.masters.yearTo}
+                                onChange={e => setEdu("masters", "yearTo", e.target.value)}
+                                placeholder="e.g. 2026 or current"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* ── 3. EXPERIENCE ── */}
+                    <hr className="settings-divider" />
+                    <div className="settings-section">
+                      <h2>Experience</h2>
+                      <p className="section-desc">Tell students about your teaching background and expertise.</p>
+                      <div className="settings-form-grid">
+                        <div className="input-group">
+                          <label>Years of Experience *</label>
+                          <input
+                            type="number"
+                            required
+                            min="0"
+                            value={tutorData.experienceYears}
+                            onChange={e => setTutorData({ ...tutorData, experienceYears: e.target.value })}
+                            placeholder="e.g. 5"
+                          />
+                        </div>
+                      </div>
+                      <div className="input-group full-width" style={{ marginTop: "1rem" }}>
+                        <label>Describe your experience *</label>
+                        <textarea
+                          required
+                          rows={5}
+                          value={tutorData.experienceDescription}
+                          onChange={e => setTutorData({ ...tutorData, experienceDescription: e.target.value })}
+                          placeholder="Describe your teaching experience, methodologies, and accomplishments..."
+                        />
+                      </div>
+                    </div>
+
+                    {/* ── 4. TEACHING INFO ── */}
+                    <hr className="settings-divider" />
+                    <div className="settings-section">
+                      <h2>Teaching Info</h2>
                       <div className="settings-form-grid">
                         <div className="input-group">
                           <label>Native Language *</label>
@@ -428,21 +674,6 @@ export default function SettingsPage() {
                             ))}
                           </select>
                         </div>
-
-                        <div className="input-group">
-                          <label>Tutor Mode *</label>
-                          <select
-                            required
-                            value={tutorData.tutorMode}
-                            onChange={e => setTutorData({ ...tutorData, tutorMode: e.target.value })}
-                          >
-                            <option value="">Select tutor mode</option>
-                            {tutorModes.map(mode => (
-                              <option key={mode} value={mode}>{mode}</option>
-                            ))}
-                          </select>
-                        </div>
-
                         <div className="input-group">
                           <label>Languages I Know *</label>
                           <input
@@ -453,30 +684,6 @@ export default function SettingsPage() {
                             placeholder="e.g. English, Nepali, Spanish"
                           />
                         </div>
-
-                        <div className="input-group">
-                          <label>Where did you graduate? *</label>
-                          <input
-                            type="text"
-                            required
-                            value={tutorData.qualifications}
-                            onChange={e => setTutorData({ ...tutorData, qualifications: e.target.value })}
-                            placeholder="e.g. Tribhuvan University, BSc Computer Science"
-                          />
-                        </div>
-
-                        <div className="input-group">
-                          <label>Experience (Years) *</label>
-                          <input
-                            type="number"
-                            required
-                            min="0"
-                            value={tutorData.experienceYears}
-                            onChange={e => setTutorData({ ...tutorData, experienceYears: e.target.value })}
-                            placeholder="e.g. 5"
-                          />
-                        </div>
-
                         <div className="input-group">
                           <label>Subjects Taught *</label>
                           <input
@@ -487,7 +694,6 @@ export default function SettingsPage() {
                             placeholder="e.g. Mathematics, Science"
                           />
                         </div>
-
                         <div className="input-group">
                           <label>Primary Location *</label>
                           <input
@@ -498,7 +704,6 @@ export default function SettingsPage() {
                             placeholder="e.g. Kathmandu"
                           />
                         </div>
-
                         <div className="input-group">
                           <label>Hourly Rate (Rs.) *</label>
                           <input
@@ -510,71 +715,20 @@ export default function SettingsPage() {
                             placeholder="e.g. 700"
                           />
                         </div>
-                      </div>
-
-                      {/* Experience Description */}
-                      <div className="input-group full-width" style={{ marginTop: "1rem" }}>
-                        <label>What experience do you have? *</label>
-                        <textarea
-                          required
-                          rows={4}
-                          value={tutorData.experienceDescription}
-                          onChange={e => setTutorData({ ...tutorData, experienceDescription: e.target.value })}
-                          placeholder="Describe your teaching experience, methodologies, and accomplishments..."
-                        />
-                      </div>
-
-                      {/* Brief Introduction simulated editor */}
-                      <div className="input-group full-width" style={{ marginTop: "1.5rem" }}>
-                        <label>A brief introduction *</label>
-                        <div className="simulated-editor-container">
-                          
-                          {/* Rich Text controls */}
-                          <div className="editor-toolbar">
-                            <button type="button" className="toolbar-btn font-bold-style">B</button>
-                            <button type="button" className="toolbar-btn font-italic-style">I</button>
-                            <button type="button" className="toolbar-btn font-underline-style">U</button>
-                            <span className="toolbar-separator">|</span>
-                            <button type="button" className="toolbar-btn">List</button>
-                            <button type="button" className="toolbar-btn">Num</button>
-                            <button type="button" className="toolbar-btn">Link</button>
-                            <span className="toolbar-separator">|</span>
-                            <button type="button" className="toolbar-btn">Undo</button>
-                            <button type="button" className="toolbar-btn">Redo</button>
-                            <button type="button" className="toolbar-btn">Clear</button>
-                            
-                            <button type="button" className="ai-write-btn" onClick={() => {
-                              toast.info("AI Write helper feature coming soon!");
-                            }}>
-                              ✨ Write with AI
-                            </button>
-                          </div>
-
-                          <textarea
-                            required
-                            rows={8}
-                            className="editor-textarea"
-                            value={tutorData.introduction}
-                            onChange={e => setTutorData({ ...tutorData, introduction: e.target.value })}
-                            placeholder="Add your introduction (Minimum 300 words required)..."
+                        <div className="input-group">
+                          <label>Qualifications Summary</label>
+                          <input
+                            type="text"
+                            value={tutorData.qualifications}
+                            onChange={e => setTutorData({ ...tutorData, qualifications: e.target.value })}
+                            placeholder="e.g. BSc Mathematics, Tribhuvan University"
                           />
                         </div>
-
-                        <div className="word-count-status-row">
-                          <span className={`word-count-indicator ${isIntroValid ? "valid" : "invalid"}`}>
-                            {isIntroValid ? (
-                              <><CheckCircle2 size={14} /> Meets minimum word requirement</>
-                            ) : (
-                              <><AlertTriangle size={14} /> Minimum 300 words required.</>
-                            )}
-                          </span>
-                          <span className="word-count-badge">Words: {wordCount}/300</span>
-                        </div>
                       </div>
-
                     </div>
                   </>
                 )}
+
 
                 {/* Submit Row */}
                 <div className="settings-submit-footer">

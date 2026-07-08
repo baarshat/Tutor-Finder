@@ -149,6 +149,9 @@ public class TutorController {
             summary.put("userEmail", user.getEmail());
             summary.put("userPhone", user.getPhone());
             summary.put("verified", user.isVerified());
+            // Expose user's profilePicUrl so TutorDetailPage shows the latest picture
+            // (Settings saves profile pics to the User entity, not TutorProfile)
+            summary.put("userProfilePicUrl", user.getProfilePicUrl());
         } else {
             summary.put("verified", false);
         }

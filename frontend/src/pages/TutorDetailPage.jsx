@@ -94,7 +94,6 @@ export default function TutorDetailPage() {
     }
   };
 
-  // Enrich with premium mock structure for missing fields
   const profile = useMemo(() => {
     if (!tutor) return null;
 
@@ -108,22 +107,113 @@ export default function TutorDetailPage() {
       }
     }
 
-    const defaultBio = `I am a Master's student pursuing a (Master's in Data Science) at the School of Mathematical Science (Tribhuvan University, Kritipur). I completed my Bachelor of Science from ASCOL (Amrit Science Campus, Lainchaur) with a major in Mathematics. I am a hardworking and sincere person ready to teach and help students in their academic journey. I enjoy utilizing modern and creative teaching methods to help students better understand concepts and apply them practically.`;
+    // Parse languages: combine nativeLanguage + languagesKnown, deduplicate
+    const parseLanguages = () => {
+      const langs = new Set();
+      if (tutor.nativeLanguage) langs.add(tutor.nativeLanguage.trim());
+      if (tutor.languagesKnown) {
+        tutor.languagesKnown.split(",").map(l => l.trim()).filter(Boolean).forEach(l => langs.add(l));
+      }
+      return langs.size > 0 ? Array.from(langs) : ["English", "Nepali"];
+    };
+
+    // Build education timeline from the structured JSON saved by Settings
+    const buildEducation = () => {
+      if (tutor.education) {
+        try {
+          const parsed = typeof tutor.education === "string" ? JSON.parse(tutor.education) : tutor.education;
+
+          // New structured format: { plusTwo, bachelors, masters }
+          if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+            const entries = [];
+            let id = 1;
+
+            if (parsed.masters?.hasDone && parsed.masters.degree) {
+              const yFrom = parsed.masters.yearFrom || "";
+              const yTo = parsed.masters.yearTo || "current";
+              entries.push({
+                id: id++,
+                year: yFrom ? `${yFrom} – ${yTo}` : yTo,
+                degree: parsed.masters.degree,
+                institution: parsed.masters.institution || "",
+                location: "",
+                description: "",
+              });
+            }
+
+            if (parsed.bachelors?.degree) {
+              const yFrom = parsed.bachelors.yearFrom || "";
+              const yTo = parsed.bachelors.yearTo || "";
+              entries.push({
+                id: id++,
+                year: yFrom ? `${yFrom} – ${yTo}` : yTo,
+                degree: parsed.bachelors.degree,
+                institution: parsed.bachelors.institution || "",
+                location: "",
+                description: "",
+              });
+            }
+
+            if (parsed.plusTwo?.institution) {
+              const yFrom = parsed.plusTwo.yearFrom || "";
+              const yTo = parsed.plusTwo.yearTo || "";
+              entries.push({
+                id: id++,
+                year: yFrom ? `${yFrom} – ${yTo}` : yTo,
+                degree: `+2 ${parsed.plusTwo.faculty || ""}`.trim(),
+                institution: parsed.plusTwo.institution,
+                location: "",
+                description: "",
+              });
+            }
+
+            if (entries.length > 0) return entries;
+          }
+
+          // Legacy array format
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        } catch { /* ignore parse errors */ }
+      }
+
+      // Fallback: build a single entry from qualifications + experienceDescription
+      if (tutor.qualifications) {
+        return [{
+          id: 1,
+          year: "Academic Background",
+          degree: tutor.qualifications,
+          institution: "",
+          location: tutor.location || "",
+          description: tutor.experienceDescription || "Experienced educator with a solid academic foundation.",
+        }];
+      }
+
+      return [];
+    };
+
 
     const name = tutor.userName || tutor.name || "Tutor Profile";
+
+    // Prefer user's profilePicUrl (updated via Settings page) over tutor profile pic
+    const picUrl = tutor.userProfilePicUrl || tutor.profilePicUrl;
+
+    // Use real introduction from Settings, fallback to placeholder
+    const bio = tutor.introduction ||
+      `I am a dedicated tutor passionate about helping students achieve their academic goals. I bring ${tutor.experienceYears || "several"} years of teaching experience across various subjects.`;
 
     return {
       id: tutor.id,
       name: name,
-      image: tutor.profilePicUrl ? `data:image/jpeg;base64,${tutor.profilePicUrl}` : null,
-      headline: tutor.qualifications ? `Building strong foundations in ${subjectsList[0] || "subjects"} for success.` : "Dedicated educator offering personalized learning sessions.",
+      image: picUrl ? (picUrl.startsWith("data:") ? picUrl : `data:image/jpeg;base64,${picUrl}`) : null,
+      headline: tutor.qualifications
+        ? `Building strong foundations in ${subjectsList[0] || "subjects"} for success.`
+        : "Dedicated educator offering personalized learning sessions.",
       location: tutor.location || "Kathmandu",
       subjects: subjectsList.length > 0 ? subjectsList : ["Mathematics", "Science"],
       hourlyRate: tutor.hourlyRate || 500,
       experienceYears: tutor.experienceYears || 2,
-      bio: defaultBio,
+      bio: bio,
       levels: ["Secondary (9-10)", "H Secondary (11-12)", "Undergraduate"],
-      languages: ["English", "Nepali"],
+      languages: parseLanguages(),
       status: tutor.status || "VERIFIED",
       online: true,
       bookedSessions: 2,
@@ -131,34 +221,10 @@ export default function TutorDetailPage() {
       responseTime: "2 hours",
       rating: reviewStats.averageRating || 0,
       reviewsCount: reviewStats.reviewCount || 0,
-      education: [
-        {
-          id: 1,
-          year: "2024 - Current",
-          degree: "Masters in Data Science",
-          institution: "Tribhuvan University, School of Mathematical Sciences",
-          location: "Kathmandu, Nepal",
-          description: "Master in Data Science (MDS) program of Tribhuvan University is implemented by the School of Mathematical Sciences under the Faculty of Humanities and Social Sciences. The curriculum covers advanced statistical tools, machine learning, big data analysis, and predictive modeling."
-        },
-        {
-          id: 2,
-          year: "2016 - 2021",
-          degree: "Bsc, Bachelor of Science in Mathematics",
-          institution: "Tribhuvan University, Amrit Science Campus",
-          location: "Kathmandu, Nepal",
-          description: "A Bachelor of Science in Mathematics is an undergraduate degree program that provides students with a solid foundation in core mathematical concepts, advanced proof structures, linear algebra, calculus, and abstract structures."
-        },
-        {
-          id: 3,
-          year: "2014 - 2016",
-          degree: "+2 Science",
-          institution: "Southwestern State College",
-          location: "Kathmandu, Nepal",
-          description: "+2 Science, spanning two years, is commonly selected by students targeting career development in medical, engineering, research, technology, and advanced science fields."
-        }
-      ]
+      education: buildEducation(),
     };
-  }, [tutor]);
+  }, [tutor, reviewStats]);
+
 
 
   const handleOpenBooking = () => {
@@ -276,44 +342,72 @@ export default function TutorDetailPage() {
             </div>
           </section>
 
-          {/* Education Timeline Section */}
-          <section className="profile-detail-section">
-            <h2>Education</h2>
-            <div className="education-timeline-list">
-              {profile.education.map((edu) => {
-                const isExpanded = !!educationExpanded[edu.id];
-                return (
-                  <div key={edu.id} className="education-timeline-item">
-                    <div className="edu-year-col">
-                      <span>{edu.year}</span>
-                    </div>
-                    <div className="edu-details-col">
-                      <div className="edu-degree-line">
-                        <h3>{edu.degree}</h3>
-                      </div>
-                      <div className="edu-inst-line">
-                        <GraduationCap size={16} />
-                        <span>{edu.institution}</span>
-                      </div>
-                      <div className="edu-loc-line">
-                        <MapPin size={14} />
-                        <span>{edu.location}</span>
-                      </div>
-                      <p className="edu-description">
-                        {isExpanded ? edu.description : `${edu.description.substring(0, 100)}...`}
-                      </p>
-                      <button 
-                        className="show-more-toggle-btn"
-                        onClick={() => toggleEducation(edu.id)}
-                      >
-                        {isExpanded ? "Show less" : "Show more"}
-                      </button>
-                    </div>
+          {/* Experience Section */}
+          {(tutor.experienceYears || tutor.experienceDescription) && (
+            <section className="profile-detail-section">
+              <h2>Experience</h2>
+              <div className="experience-content">
+                {tutor.experienceYears > 0 && (
+                  <div className="experience-years-badge">
+                    <span className="exp-years-num">{tutor.experienceYears}</span>
+                    <span className="exp-years-label">year{tutor.experienceYears !== 1 ? "s" : ""} of teaching experience</span>
                   </div>
-                );
-              })}
-            </div>
-          </section>
+                )}
+                {tutor.experienceDescription && (
+                  <p className="experience-description-text">{tutor.experienceDescription}</p>
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Education Timeline Section */}
+          {profile.education.length > 0 && (
+            <section className="profile-detail-section">
+              <h2>Education</h2>
+              <div className="education-timeline-list">
+                {profile.education.map((edu) => {
+                  const isExpanded = !!educationExpanded[edu.id];
+                  return (
+                    <div key={edu.id} className="education-timeline-item">
+                      <div className="edu-year-col">
+                        <span>{edu.year}</span>
+                      </div>
+                      <div className="edu-details-col">
+                        <div className="edu-degree-line">
+                          <h3>{edu.degree}</h3>
+                        </div>
+                        {edu.institution && (
+                          <div className="edu-inst-line">
+                            <GraduationCap size={16} />
+                            <span>{edu.institution}</span>
+                          </div>
+                        )}
+                        {edu.location && (
+                          <div className="edu-loc-line">
+                            <MapPin size={14} />
+                            <span>{edu.location}</span>
+                          </div>
+                        )}
+                        {edu.description && (
+                          <>
+                            <p className="edu-description">
+                              {isExpanded ? edu.description : `${edu.description.substring(0, 120)}...`}
+                            </p>
+                            <button 
+                              className="show-more-toggle-btn"
+                              onClick={() => toggleEducation(edu.id)}
+                            >
+                              {isExpanded ? "Show less" : "Show more"}
+                            </button>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           {/* Student Reviews Section */}
           <section className="profile-detail-section">
