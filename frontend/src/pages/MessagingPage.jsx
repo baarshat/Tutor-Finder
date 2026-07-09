@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import { Search, MessageSquare, Users, Send, ArrowLeft, SquarePen } from "lucide-react";
 import "./MessagingPage.css";
 
@@ -57,6 +58,8 @@ const MessagingPage = () => {
   const [allTutors, setAllTutors] = useState([]);
   const [allStudents, setAllStudents] = useState([]);
   const [loadingChat, setLoadingChat] = useState(false);
+
+  const location = useLocation();
 
   const [stompConnected, setStompConnected] = useState(false);
 
@@ -304,6 +307,25 @@ const MessagingPage = () => {
     [currentUserId]
   );
 
+  // Auto-open a chat when navigating from TutorDetailPage with state
+  const hasHandledNavState = useRef(false);
+  useEffect(() => {
+    if (hasHandledNavState.current) return;
+    const openChatWith = location.state?.openChatWith;
+    if (openChatWith && openChatWith.userId && currentUserId) {
+      hasHandledNavState.current = true;
+      const selected = {
+        userId: openChatWith.userId,
+        userName: openChatWith.userName || "Tutor",
+        profilePicUrl: openChatWith.profilePicUrl || null,
+      };
+      setSelectedChat(selected);
+      loadChatHistory(openChatWith.userId);
+      // Clear the navigation state so refreshing doesn't re-trigger
+      window.history.replaceState({}, document.title);
+    }
+  }, [location.state, currentUserId, loadChatHistory]);
+
   // Scroll to bottom of messages
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -458,7 +480,7 @@ const MessagingPage = () => {
                   <div className="search-result-avatar">
                     {contact.profilePicUrl ? (
                       <img
-                        src={`data:image/jpeg;base64,${contact.profilePicUrl}`}
+                        src={contact.profilePicUrl.startsWith("data:") ? contact.profilePicUrl : `data:image/jpeg;base64,${contact.profilePicUrl}`}
                         alt={contact.userName || contact.name}
                       />
                     ) : (
@@ -520,7 +542,7 @@ const MessagingPage = () => {
                     <div className="conversation-avatar">
                       {conv.profilePicUrl ? (
                         <img
-                          src={`data:image/jpeg;base64,${conv.profilePicUrl}`}
+                          src={conv.profilePicUrl.startsWith("data:") ? conv.profilePicUrl : `data:image/jpeg;base64,${conv.profilePicUrl}`}
                           alt={conv.userName}
                         />
                       ) : (
@@ -573,7 +595,7 @@ const MessagingPage = () => {
               <div className="chat-header-avatar">
                 {selectedChat.profilePicUrl ? (
                   <img
-                    src={`data:image/jpeg;base64,${selectedChat.profilePicUrl}`}
+                    src={selectedChat.profilePicUrl.startsWith("data:") ? selectedChat.profilePicUrl : `data:image/jpeg;base64,${selectedChat.profilePicUrl}`}
                     alt={selectedChat.userName}
                   />
                 ) : (

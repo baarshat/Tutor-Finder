@@ -28,6 +28,7 @@ export default function TutorVerificationPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [profileStatus, setProfileStatus] = useState("LOADING");
+  const [selectedAmount, setSelectedAmount] = useState(500);
   const submitLockRef = useRef(false);
 
   const getAuthToken = () => {
@@ -196,7 +197,7 @@ export default function TutorVerificationPage() {
         profilePicUrl: documents.profilePic.base64,
         certificationUrl: documents.certification.base64,
         nidUrl: documents.nid.base64,
-        amount: 500, // fixed verification fee for example
+        amount: selectedAmount,
       };
 
       // Validate required fields
@@ -518,11 +519,66 @@ export default function TutorVerificationPage() {
             </div>
           </div>
 
-          <div className="submit-section">
-            <button type="submit" className="esewa-btn" disabled={loading}>
-              {loading ? "Processing..." : "Pay Rs. 500 with eSewa"}
-            </button>
-            <p className="secure-text">Secure payment gateway</p>
+          <div className="tier-cards-section">
+            <h2 className="tier-section-title">Select your verification plan</h2>
+            <div className="tier-cards-container">
+              
+              {/* Basic Tier */}
+              <div className="tier-card">
+                <div className="tier-header">
+                  <h3>Basic</h3>
+                  <div className="tier-price">
+                    <span className="currency">Rs.</span>
+                    <span className="amount">500</span>
+                    <span className="period">/year</span>
+                  </div>
+                  <p className="tier-desc">Standard verification and profile listing.</p>
+                </div>
+                <ul className="tier-features">
+                  <li><CheckCircle2 size={16} className="feature-icon" /> Verified Tutor Badge</li>
+                  <li><CheckCircle2 size={16} className="feature-icon" /> Standard profile visibility</li>
+                  <li><CheckCircle2 size={16} className="feature-icon" /> Basic analytics</li>
+                </ul>
+                <button 
+                  type="submit" 
+                  className="tier-btn" 
+                  onClick={() => setSelectedAmount(500)}
+                  disabled={loading}
+                >
+                  {loading && selectedAmount === 500 ? "Processing..." : "Pay with eSewa"}
+                </button>
+              </div>
+
+              {/* Premium Tier */}
+              <div className="tier-card premium">
+                <div className="tier-badge">Recommended</div>
+                <div className="tier-header">
+                  <h3>Premium</h3>
+                  <div className="tier-price">
+                    <span className="currency">Rs.</span>
+                    <span className="amount">1000</span>
+                    <span className="period">/year</span>
+                  </div>
+                  <p className="tier-desc">Enhanced visibility and advanced features.</p>
+                </div>
+                <ul className="tier-features">
+                  <li><CheckCircle2 size={16} className="feature-icon" /> Everything in Basic</li>
+                  <li><CheckCircle2 size={16} className="feature-icon" /> Priority listing in search</li>
+                  <li><CheckCircle2 size={16} className="feature-icon" /> Advanced analytics</li>
+                  <li><CheckCircle2 size={16} className="feature-icon" /> Featured on homepage</li>
+                </ul>
+                <button 
+                  type="submit" 
+                  className="tier-btn premium-btn" 
+                  onClick={() => setSelectedAmount(1000)}
+                  disabled={loading}
+                >
+                  {loading && selectedAmount === 1000 ? "Processing..." : "Pay with eSewa"}
+                </button>
+              </div>
+
+            </div>
+            <p className="secure-text">Secure payment gateway via eSewa</p>
           </div>
         </form>
       </div>

@@ -225,3 +225,168 @@
   justify-content: center;
   gap: 0.25rem;
 }
+
+/* Tier Cards */
+.tier-cards-section {
+  margin-top: 3rem;
+  border-top: 1px solid #e5e7eb;
+  padding-top: 2rem;
+}
+
+.tier-section-title {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 2rem;
+}
+
+.tier-cards-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 768px) {
+  .tier-cards-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.tier-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 1rem;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+  position: relative;
+}
+
+.tier-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+  border-color: #d1d5db;
+}
+
+.tier-card.premium {
+  border: 2px solid #21ab87;
+  background: #f0fdf4;
+}
+
+.tier-badge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #21ab87;
+  color: white;
+  padding: 0.25rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tier-header {
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.tier-header h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 0.5rem;
+}
+
+.tier-price {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 0.25rem;
+  margin-bottom: 0.5rem;
+}
+
+.tier-price .currency {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.tier-price .amount {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #111827;
+  line-height: 1;
+}
+
+.tier-price .period {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.tier-desc {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.tier-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+  flex-grow: 1;
+}
+
+.tier-features li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: #374151;
+  margin-bottom: 1rem;
+  line-height: 1.4;
+}
+
+.feature-icon {
+  color: #21ab87;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+
+.tier-btn {
+  background: white;
+  border: 1px solid #d1d5db;
+  color: #374151;
+  font-weight: 600;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.5rem;
+  width: 100%;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 1rem;
+}
+
+.tier-btn:hover:not(:disabled) {
+  background: #f9fafb;
+  border-color: #9ca3af;
+}
+
+.tier-btn.premium-btn {
+  background: #21ab87;
+  border: 1px solid #21ab87;
+  color: white;
+}
+
+.tier-btn.premium-btn:hover:not(:disabled) {
+  background: #1a8e6f;
+  border-color: #1a8e6f;
+}
+
+.tier-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}

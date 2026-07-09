@@ -236,6 +236,24 @@ export default function TutorDetailPage() {
     setIsBookingOpen(true);
   };
 
+  const handleSendMessage = () => {
+    const storedUser = localStorage.getItem("user");
+    if (!storedUser) {
+      navigate("/login");
+      return;
+    }
+    // Navigate to messages page with tutor info so the conversation auto-opens
+    navigate("/messages", {
+      state: {
+        openChatWith: {
+          userId: tutor.userId || tutor.id,
+          userName: tutor.userName || tutor.name || "Tutor",
+          profilePicUrl: tutor.profilePicUrl || tutor.userProfilePicUrl || null,
+        },
+      },
+    });
+  };
+
   const toggleEducation = (eduId) => {
     setEducationExpanded(prev => ({
       ...prev,
@@ -525,17 +543,10 @@ export default function TutorDetailPage() {
               <Calendar size={18} /> Book trial lesson
             </button>
 
-            <button className="secondary-btn send-message-btn">
+            <button className="secondary-btn send-message-btn" onClick={handleSendMessage}>
               <MessageSquare size={18} /> Send message
             </button>
 
-            <button 
-              className={`favorite-action-btn ${isFavorite ? "active" : ""}`}
-              onClick={() => setIsFavorite(!isFavorite)}
-            >
-              <Heart size={20} fill={isFavorite ? "#e11d48" : "none"} color={isFavorite ? "#e11d48" : "#64748b"} />
-              {isFavorite ? "Saved to Favorites" : "Add to Favorites"}
-            </button>
 
             {/* Sidebar Meta Stats List */}
             <div className="sidebar-meta-stats-list">
