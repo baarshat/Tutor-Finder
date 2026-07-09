@@ -216,8 +216,8 @@ export default function TutorDetailPage() {
       languages: parseLanguages(),
       status: tutor.status || "VERIFIED",
       online: true,
-      bookedSessions: 2,
-      totalSessions: 203,
+      bookedSessions: tutor.sessionsToday || 0,
+      totalSessions: tutor.completedSessions || 0,
       responseTime: "2 hours",
       rating: reviewStats.averageRating || 0,
       reviewsCount: reviewStats.reviewCount || 0,
@@ -330,16 +330,6 @@ export default function TutorDetailPage() {
                   <span className="badge-title">I can speak</span>
                   <span className="badge-value">{profile.languages.join(", ")}</span>
                 </div>
-              </div>
-
-              <div className="status-indicators">
-                <span className={`status-pill ${profile.online ? "online" : "offline"}`}>
-                  <span className="indicator-dot"></span>
-                  {profile.online ? "online" : "offline"}
-                </span>
-                <span className="achievements-trigger">
-                  <Award size={16} /> Achievements
-                </span>
               </div>
             </div>
           </div>
@@ -577,16 +567,6 @@ export default function TutorDetailPage() {
                 <div className="stat-content">
                   <span className="stat-val">{profile.totalSessions}</span>
                   <span className="stat-label">Sessions</span>
-                </div>
-              </div>
-
-              <div className="meta-stat-row">
-                <div className="stat-icon-wrapper clock-icon">
-                  <Clock size={16} color="var(--primary)" />
-                </div>
-                <div className="stat-content">
-                  <span className="stat-val">{profile.responseTime}</span>
-                  <span className="stat-label">Response time</span>
                 </div>
               </div>
             </div>

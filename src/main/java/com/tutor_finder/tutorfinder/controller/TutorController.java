@@ -4,6 +4,8 @@ import com.tutor_finder.tutorfinder.model.TutorProfile;
 import com.tutor_finder.tutorfinder.model.User;
 import com.tutor_finder.tutorfinder.repository.ReviewRepository;
 import com.tutor_finder.tutorfinder.repository.UserRepository;
+import com.tutor_finder.tutorfinder.repository.BookingRepository;
+import com.tutor_finder.tutorfinder.model.BookingStatus;
 import com.tutor_finder.tutorfinder.service.TutorProfileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @RestController
 @RequestMapping("/api/tutors")
@@ -21,12 +25,14 @@ public class TutorController {
     private final TutorProfileService tutorProfileService;
     private final UserRepository userRepository;
     private final ReviewRepository reviewRepository;
+    private final BookingRepository bookingRepository;
 
     @Autowired
-    public TutorController(TutorProfileService tutorProfileService, UserRepository userRepository, ReviewRepository reviewRepository) {
+    public TutorController(TutorProfileService tutorProfileService, UserRepository userRepository, ReviewRepository reviewRepository, BookingRepository bookingRepository) {
         this.tutorProfileService = tutorProfileService;
         this.userRepository = userRepository;
         this.reviewRepository = reviewRepository;
+        this.bookingRepository = bookingRepository;
     }
 
     @GetMapping
@@ -155,6 +161,16 @@ public class TutorController {
         } else {
             summary.put("verified", false);
         }
+
+        // Sessions data
+        LocalDateTime startOfDay = LocalDateTime.now().with(LocalTime.MIN);
+        LocalDateTime endOfDay = LocalDateTime.now().with(LocalTime.MAX);
+        long sessionsToday = bookingRepository.countByTutorProfileIdAndStatusNotAndStartTimeBetween(
+                tutor.getId(), BookingStatus.CANCELLED, startOfDay, endOfDay);
+        long completedSessions = bookingRepository.countByTutorProfileIdAndStatus(tutor.getId(), BookingStatus.COMPLETED);
+        
+        summary.put("sessionsToday", sessionsToday);
+        summary.put("completedSessions", completedSessions);
 
         return summary;
     }

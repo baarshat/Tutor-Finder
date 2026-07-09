@@ -398,13 +398,6 @@ const BookingModal = ({ tutor, isOpen, onClose }) => {
                       />
                     </label>
                   </div>
-                  <textarea
-                    name="notes"
-                    value={formData.notes}
-                    onChange={handleFormChange}
-                    placeholder="Additional information"
-                    rows={3}
-                  />
                   {error && <p className="form-error">{error}</p>}
                   <button
                     type="submit"
