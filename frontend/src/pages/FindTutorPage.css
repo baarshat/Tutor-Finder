@@ -49,6 +49,10 @@
   gap: 0.75rem;
 }
 
+.find-tutor-page .search-input-wrapper .search-icon {
+  position: static; /* Overrides absolute position leaking from MessagingPage.css */
+}
+
 .search-input-wrapper input {
   width: 100%;
   border: none;

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useLocation } from "react-router-dom";
-import { Search, MessageSquare, Users, Send, ArrowLeft, SquarePen } from "lucide-react";
+import { Search, MessageSquare, Users, Send, ArrowLeft } from "lucide-react";
 import "./MessagingPage.css";
 
 const API_BASE = "http://localhost:8080";
@@ -259,17 +259,17 @@ const MessagingPage = () => {
     const loggedInRole = (user?.role || "").toUpperCase();
 
     let combined = [];
-    if (loggedInRole === "STUDENT") {
-      // Students can only search for Tutors
-      combined = allTutors.map((t) => ({ ...t, chatRole: "TUTOR" }));
-    } else if (loggedInRole === "TUTOR") {
+    if (loggedInRole === "TUTOR") {
       // Tutors can only search for Students
       combined = allStudents.map((s) => ({ ...s, chatRole: "STUDENT" }));
-    } else {
-      // Admins and other roles can search both
+    } else if (loggedInRole === "ADMIN" || loggedInRole === "SUPERADMIN") {
+      // Admins and superadmins can search both
       const tutorsList = allTutors.map((t) => ({ ...t, chatRole: "TUTOR" }));
       const studentsList = allStudents.map((s) => ({ ...s, chatRole: "STUDENT" }));
       combined = [...tutorsList, ...studentsList];
+    } else {
+      // Default to Student behavior (USER, STUDENT, or undefined): can only search for Tutors
+      combined = allTutors.map((t) => ({ ...t, chatRole: "TUTOR" }));
     }
 
     const results = combined.filter(
@@ -445,9 +445,6 @@ const MessagingPage = () => {
       <div className={`messaging-sidebar ${selectedChat ? "hide-on-mobile" : ""}`}>
         <div className="sidebar-header">
           <h2 className="chats-title">Chats</h2>
-          <button className="compose-btn" title="New message">
-            <SquarePen size={20} />
-          </button>
         </div>
 
         <div className="sidebar-search">
@@ -457,11 +454,11 @@ const MessagingPage = () => {
               id="tutor-search-input"
               type="text"
               placeholder={
-                (user?.role || "").toUpperCase() === "STUDENT"
-                  ? "Search tutors..."
-                  : (user?.role || "").toUpperCase() === "TUTOR"
+                (user?.role || "").toUpperCase() === "TUTOR"
                   ? "Search students..."
-                  : "Search tutors and students..."
+                  : ["ADMIN", "SUPERADMIN"].includes((user?.role || "").toUpperCase())
+                  ? "Search tutors and students..."
+                  : "Search tutors..."
               }
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -507,7 +504,7 @@ const MessagingPage = () => {
           )}
           {showSearchDropdown && searchQuery.trim() && searchResults.length === 0 && (
             <div className="search-dropdown">
-              <div className="search-no-results">No tutors or students found</div>
+              <div className="search-no-results">No one found</div>
             </div>
           )}
         </div>
@@ -515,9 +512,6 @@ const MessagingPage = () => {
         <div className="sidebar-content">
           {conversations.length === 0 ? (
             <div className="empty-state">
-              <div className="empty-icon-wrapper">
-                <MessageSquare size={48} className="empty-icon" />
-              </div>
               <p>No conversations yet</p>
               <p className="empty-hint">Search for a tutor or student to start chatting</p>
             </div>

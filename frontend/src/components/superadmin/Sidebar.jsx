@@ -10,6 +10,8 @@ import {
   LogOut,
   Home,
   Search,
+  Calendar,
+  Clock,
 } from "lucide-react";
 import ConfirmationModal from "./ConfirmationModal";
 import "./Sidebar.css";
@@ -58,10 +60,21 @@ function Sidebar() {
       { to: "/superadmin/analytics", icon: BarChart2, label: "Analytics" },
       { to: "/superadmin/history", icon: History, label: "History Logs" },
     ];
-  } else {
+  } else if (role === "TUTOR") {
     navItems = [
       { to: "/", icon: Home, label: "Home" },
       { to: "/find-tutors", icon: Search, label: "Find Tutor" },
+      { to: "/tutor/availability", icon: Clock, label: "Availability" },
+      { to: "/bookings", icon: Calendar, label: "Bookings" },
+      { to: "/messages", icon: MessageSquare, label: "Messages" },
+    ];
+  } else {
+    // Assuming STUDENT or typical USER
+    navItems = [
+      { to: "/", icon: Home, label: "Home" },
+      { to: "/find-tutors", icon: Search, label: "Find Tutor" },
+      { to: "/bookings", icon: Calendar, label: "Bookings" },
+      { to: "/messages", icon: MessageSquare, label: "Messages" },
     ];
   }
 
@@ -76,14 +89,6 @@ function Sidebar() {
             </NavLink>
           ))}
 
-          {/* Messages Icon */}
-          <NavLink
-            to="/messages"
-            className={navLinkClass}
-            title="Messages"
-          >
-            <MessageSquare size={24} strokeWidth={2} />
-          </NavLink>
         </div>
 
         <button

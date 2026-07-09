@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Bell } from "lucide-react";
 import { toast } from "react-toastify";
 import "./Navbar.css";
 
 const Navbar = () => {
-  const [user, setUser] = useState(null);
+  const [user, setUser] = useState(() => {
+    const stored = localStorage.getItem("user");
+    return stored ? JSON.parse(stored) : null;
+  });
   const [notifications, setNotifications] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false);
@@ -151,180 +154,19 @@ const Navbar = () => {
             <img src="/src/public/removebg-logo.png" alt="TutorFinder Logo" />
             <span>TutorFinder</span>
           </Link>
-          <div className="navbar-links">
-            <Link to="/" className="nav-link">
-              Home
-            </Link>
-            <Link to="/find-tutors" className="nav-link">
-              Find Tutor
-            </Link>
-            {user && (
-              <Link to="/bookings" className="nav-link">
-                Bookings
-              </Link>
-            )}
-            {user?.role === "TUTOR" && (
-              <Link to="/tutor/availability" className="nav-link">
-                Availability
-              </Link>
-            )}
-          </div>
+          {!user && (
+            <div className="navbar-links">
+              <NavLink to="/" className="nav-link" end>
+                Home
+              </NavLink>
+              <NavLink to="/find-tutors" className="nav-link">
+                Find Tutor
+              </NavLink>
+            </div>
+          )}
         </div>
         <div className="navbar-actions">
-          {user ? (
-            <div className="user-profile">
-              <div className="notification-wrapper">
-                <button
-                  className="notification-button"
-                  onClick={() => setDropdownOpen((prev) => !prev)}
-                  type="button"
-                >
-                  <Bell size={20} />
-                  {notifications.length > 0 && (
-                    <span className="notification-badge">
-                      {notifications.length}
-                    </span>
-                  )}
-                </button>
-                {dropdownOpen && (
-                  <div className="notification-dropdown">
-                    <div className="notification-header">
-                      <span>Notifications</span>
-                      {notifications.length > 0 && (
-                        <button
-                          type="button"
-                          className="notification-clear"
-                          onClick={async () => {
-                            const token =
-                              user.token ||
-                              user.accessToken ||
-                              user.jwtToken ||
-                              localStorage.getItem("token") ||
-                              "";
-                            await fetch(
-                              "http://localhost:8080/api/notifications/read-all",
-                              {
-                                method: "PUT",
-                                headers: {
-                                  "Content-Type": "application/json",
-                                  ...(token
-                                    ? { Authorization: `Bearer ${token}` }
-                                    : {}),
-                                },
-                              },
-                            );
-                            setNotifications([]);
-                          }}
-                        >
-                          Mark all read
-                        </button>
-                      )}
-                    </div>
-                    {notifications.length === 0 ? (
-                      <p className="notification-empty">
-                        No new notifications.
-                      </p>
-                    ) : (
-                      notifications.map((note) => (
-                        <div key={note.id} className="notification-item">
-                          <p>{note.message}</p>
-                          <button
-                            type="button"
-                            onClick={async () => {
-                              const token =
-                                user.token ||
-                                user.accessToken ||
-                                user.jwtToken ||
-                                localStorage.getItem("token") ||
-                                "";
-                              await fetch(
-                                `http://localhost:8080/api/notifications/${note.id}/read`,
-                                {
-                                  method: "PUT",
-                                  headers: {
-                                    "Content-Type": "application/json",
-                                    ...(token
-                                      ? { Authorization: `Bearer ${token}` }
-                                      : {}),
-                                  },
-                                },
-                              );
-                              setNotifications((prev) =>
-                                prev.filter((item) => item.id !== note.id),
-                              );
-                            }}
-                          >
-                            Mark read
-                          </button>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                )}
-              </div>
-              <div className="user-avatar-container" title={user.name}>
-                {user.profilePicUrl ? (
-                  <img
-                    src={user.profilePicUrl}
-                    alt={user.name}
-                    className="user-avatar-img"
-                    onClick={() => setAvatarDropdownOpen((prev) => !prev)}
-                  />
-                ) : (
-                  <div
-                    className="user-avatar"
-                    onClick={() => setAvatarDropdownOpen((prev) => !prev)}
-                  >
-                    {getInitials(user.name)}
-                  </div>
-                )}
-
-                {avatarDropdownOpen && (
-                  <div className="avatar-dropdown-menu">
-                    <div className="dropdown-user-header">
-                      <span className="dropdown-user-name">{user.name}</span>
-                      <span className="dropdown-user-role">{user.role}</span>
-                    </div>
-                    <hr className="dropdown-divider" />
-                    <Link
-                      to="/settings"
-                      className="dropdown-item"
-                      onClick={() => setAvatarDropdownOpen(false)}
-                    >
-                      Personal Settings
-                    </Link>
-                    {user.role === "TUTOR" && (
-                      <Link
-                        to="/tutor/availability"
-                        className="dropdown-item"
-                        onClick={() => setAvatarDropdownOpen(false)}
-                      >
-                        Availability
-                      </Link>
-                    )}
-                    <Link
-                      to="/bookings"
-                      className="dropdown-item"
-                      onClick={() => setAvatarDropdownOpen(false)}
-                    >
-                      Bookings
-                    </Link>
-                    <hr className="dropdown-divider" />
-                    <button
-                      type="button"
-                      className="dropdown-item logout-btn"
-                      onClick={() => {
-                        setAvatarDropdownOpen(false);
-                        confirmLogout();
-                      }}
-                    >
-                      Log Out
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          ) : (
+          {!user && (
             <>
               <Link to="/login">
                 <button className="secondary-btn">Log In</button>

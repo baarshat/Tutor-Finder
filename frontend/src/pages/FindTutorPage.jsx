@@ -10,6 +10,16 @@ const FindTutorPage = () => {
   const [tutors, setTutors] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [selectedSubjects, setSelectedSubjects] = useState([]);
+  const [maxPrice, setMaxPrice] = useState(2000);
+
+  const handleSubjectChange = (subject) => {
+    setSelectedSubjects((prev) =>
+      prev.includes(subject)
+        ? prev.filter((s) => s !== subject)
+        : [...prev, subject]
+    );
+  };
 
   useEffect(() => {
     let isActive = true;
@@ -78,12 +88,19 @@ const FindTutorPage = () => {
   );
 
   const filteredTutors = normalizedTutors.filter(
-    (tutor) =>
-      tutor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      tutor.subjects.some((sub) =>
-        sub.toLowerCase().includes(searchTerm.toLowerCase()),
-      ) ||
-      tutor.location.toLowerCase().includes(searchTerm.toLowerCase()),
+    (tutor) => {
+      const matchesSearch = tutor.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        tutor.subjects.some((sub) => sub.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        tutor.location.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesSubject = selectedSubjects.length === 0 ||
+        selectedSubjects.some((subject) => tutor.subjects.includes(subject));
+
+      // Assume maxPrice=2000 stands for 2000+, no upper limit filtering when maxPrice >= 2000
+      const matchesPrice = maxPrice >= 2000 ? true : tutor.hourlyRate <= maxPrice;
+
+      return matchesSearch && matchesSubject && matchesPrice;
+    }
   );
 
   return (
@@ -103,7 +120,7 @@ const FindTutorPage = () => {
                 <Search className="search-icon" size={20} color="#9ca3af" />
                 <input
                   type="text"
-                  placeholder="What do you want to learn?"
+                  placeholder=""
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -129,54 +146,46 @@ const FindTutorPage = () => {
 
           <div className="filter-group">
             <h4>Subject</h4>
-            <label className="checkbox-label">
-              <input type="checkbox" /> Mathematics
-            </label>
-            <label className="checkbox-label">
-              <input type="checkbox" /> Science
-            </label>
-            <label className="checkbox-label">
-              <input type="checkbox" /> English
-            </label>
-            <label className="checkbox-label">
-              <input type="checkbox" /> Computer Science
-            </label>
-          </div>
-
-          <div className="filter-group">
-            <h4>Location</h4>
-            <label className="checkbox-label">
-              <input type="checkbox" /> Online
-            </label>
-            <label className="checkbox-label">
-              <input type="checkbox" /> Kathmandu
-            </label>
-            <label className="checkbox-label">
-              <input type="checkbox" /> Lalitpur
-            </label>
+            {[
+              "Mathematics",
+              "Science",
+              "English",
+              "Computer Science",
+              "Nepali",
+              "Physics",
+              "Chemistry",
+              "Biology"
+            ].map((subject) => (
+              <label key={subject} className="checkbox-label">
+                <input
+                  type="checkbox"
+                  checked={selectedSubjects.includes(subject)}
+                  onChange={() => handleSubjectChange(subject)}
+                /> {subject}
+              </label>
+            ))}
           </div>
 
           <div className="filter-group">
             <h4>Price Range</h4>
-            <input type="range" min="0" max="2000" className="price-slider" />
+            <input
+              type="range"
+              min="0"
+              max="2000"
+              step="100"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(Number(e.target.value))}
+              className="price-slider"
+            />
             <div className="price-labels">
               <span>NPR 0</span>
-              <span>NPR 2000+</span>
+              <span>NPR {maxPrice >= 2000 ? "2000+" : maxPrice}</span>
             </div>
           </div>
         </aside>
 
         {/* Results Area */}
         <main className="results-area">
-          <div className="results-header">
-            <h2>{filteredTutors.length} Tutors Available</h2>
-            <select className="sort-select">
-              <option>Recommended</option>
-              <option>Highest Rated</option>
-              <option>Price: Low to High</option>
-              <option>Price: High to Low</option>
-            </select>
-          </div>
 
           <div className="tutors-grid">
             {filteredTutors.map((tutor) => (

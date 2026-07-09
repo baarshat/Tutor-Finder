@@ -162,25 +162,25 @@ export default function SuperadminDashboard() {
               className="sa-action-btn"
               onClick={() => navigate("/superadmin/tutors")}
             >
-              👩‍🏫 Manage Tutors & Verify Documents
+              Manage Tutors & Verify Documents
             </button>
             <button
               className="sa-action-btn"
               onClick={() => navigate("/superadmin/students")}
             >
-              🎓 Manage Students
+              Manage Students
             </button>
             <button
               className="sa-action-btn"
               onClick={() => navigate("/superadmin/analytics")}
             >
-              📊 View Analytics Insights
+              View Analytics Insights
             </button>
             <button
               className="sa-action-btn"
               onClick={() => navigate("/superadmin/history")}
             >
-              📜 View Audit History Logs
+              View Audit History Logs
             </button>
           </div>
         </section>
