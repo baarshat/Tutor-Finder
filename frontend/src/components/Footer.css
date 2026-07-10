@@ -1,7 +1,8 @@
 .footer {
-  background-color: var(--card-bg);
-  border-top: 1px solid var(--border);
-  padding: 4rem 2rem 1rem;
+  background-color: #ffffff;
+  color: #111111;
+  border-top: 1px solid #e5e7eb;
+  padding: 2.5rem 2rem 0;
   margin-top: auto;
 }
 
@@ -9,15 +10,17 @@
   max-width: 1200px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 1fr 2fr;
-  gap: 4rem;
-  margin-bottom: 3rem;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: 2rem;
+  margin-bottom: 0;
 }
 
 .footer-brand {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  max-width: 420px;
 }
 
 .footer-logo {
@@ -27,46 +30,67 @@
 }
 
 .footer-links {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 2rem;
 }
 
-.link-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.link-group h3 {
-  font-size: 1.1rem;
-  margin-bottom: 0.5rem;
-  color: var(--text);
-}
-
-.link-group a {
-  color: #6b7280;
+.footer-links a {
+  color: #111111;
+  font-weight: 500;
   transition: color 0.2s ease;
 }
 
-.link-group a:hover {
-  color: var(--primary);
+.footer-links a:hover {
+  color: #000000;
+  text-decoration: underline;
+}
+
+.footer-socials {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.footer-socials a {
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #111111;
+  transition: all 0.2s ease;
+}
+
+.footer-socials a:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
 }
 
 .footer-bottom {
   text-align: center;
-  padding-top: 2rem;
-  border-top: 1px solid var(--border);
-  color: #9ca3af;
+  padding: 0.35rem 0 0.1rem;
+  border-top: 1px solid #e5e7eb;
+  color: #111111;
   font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.footer-bottom p {
+  margin: 0;
+  padding: 0;
 }
 
 @media (max-width: 768px) {
   .footer-container {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 1.5rem;
   }
+
   .footer-links {
-    flex-wrap: wrap;
-    gap: 2rem;
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
   }
 }

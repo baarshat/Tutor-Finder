@@ -8,6 +8,16 @@
   flex: 1;
 }
 
+.main-content--auth {
+  min-height: 100vh;
+  display: flex;
+}
+
+.main-content--auth > * {
+  flex: 1;
+  width: 100%;
+}
+
 /* Button Styles - Stitch "High-Contrast Functionalism" */
 .primary-btn {
   background-color: var(--primary);

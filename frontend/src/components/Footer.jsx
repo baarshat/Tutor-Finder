@@ -1,32 +1,51 @@
-import React from 'react';
-import './Footer.css';
+import React from "react";
+import { Link } from "react-router-dom";
+import { Facebook, Github, Instagram } from "lucide-react";
+import "./Footer.css";
 
 const Footer = () => {
   return (
     <footer className="footer">
       <div className="footer-container">
         <div className="footer-brand">
-          <img src="/src/public/removebg-logo.png" alt="TutorFinder Logo" className="footer-logo" />
+          <img
+            src="/src/public/removebg-logo.png"
+            alt="TutorFinder Logo"
+            className="footer-logo"
+          />
           <p>Your journey to excellence starts here.</p>
+          <div className="footer-socials">
+            <a
+              href="https://www.facebook.com"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Facebook"
+            >
+              <Facebook size={18} />
+            </a>
+            <a
+              href="https://www.instagram.com"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Instagram"
+            >
+              <Instagram size={18} />
+            </a>
+            <a
+              href="https://github.com"
+              target="_blank"
+              rel="noreferrer"
+              aria-label="GitHub"
+            >
+              <Github size={18} />
+            </a>
+          </div>
         </div>
         <div className="footer-links">
-          <div className="link-group">
-            <h3>Company</h3>
-            <a href="#">About Us</a>
-            <a href="#">Careers</a>
-            <a href="#">Contact</a>
-          </div>
-          <div className="link-group">
-            <h3>Resources</h3>
-            <a href="#">Blog</a>
-            <a href="#">Help Center</a>
-            <a href="#">Guidelines</a>
-          </div>
-          <div className="link-group">
-            <h3>Legal</h3>
-            <a href="#">Terms of Service</a>
-            <a href="#">Privacy Policy</a>
-          </div>
+          <Link to="/about-us">About us</Link>
+          <Link to="/contact-us">Contact us</Link>
+          <Link to="/terms-and-conditions">Terms and Conditions</Link>
+          <Link to="/privacy-policy">Privacy Policy</Link>
         </div>
       </div>
       <div className="footer-bottom">

@@ -30,11 +30,13 @@
 
 body {
   margin: 0;
-  display: flex;
-  flex-direction: column;
   min-width: 320px;
   min-height: 100vh;
   background-color: var(--background);
+}
+
+#root {
+  min-height: 100vh;
 }
 
 h1, h2, h3, p {
