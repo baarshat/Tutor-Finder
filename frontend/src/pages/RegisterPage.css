@@ -92,6 +92,54 @@
   margin-top: 8px;
 }
 
+.register-page .primary-btn.full-width {
+  width: 100%;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.oauth-divider {
+  position: relative;
+  text-align: center;
+  margin-top: 8px;
+}
+
+.oauth-divider::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px solid var(--border);
+}
+
+.oauth-divider span {
+  position: relative;
+  background: #fff;
+  padding: 0 10px;
+  font-size: 13px;
+  color: #718096;
+}
+
+.google-register-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+#googleRegisterDiv {
+  width: 100%;
+  max-width: 400px;
+}
+
+.google-loading-text {
+  font-size: 12px;
+  color: #4a5568;
+}
+
 .error-text {
   color: #e53e3e;
   font-size: 12px;

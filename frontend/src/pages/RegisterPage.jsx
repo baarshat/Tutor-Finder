@@ -1,10 +1,13 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Eye, EyeOff } from "lucide-react";
 import AuthLayout from "../components/AuthLayout";
 import "./RegisterPage.css";
 
 const RegisterPage = () => {
+  const GOOGLE_CLIENT_ID =
+    "554198995901-agr3ug4qtl7oo7q5o86686fn1sl0knds.apps.googleusercontent.com";
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [role, setRole] = useState("student");
@@ -71,6 +74,106 @@ const RegisterPage = () => {
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [googleLoading, setGoogleLoading] = useState(false);
+  const googleButtonRef = useRef(null);
+
+  const handleGoogleAuthSuccess = useCallback((data) => {
+    localStorage.setItem("user", JSON.stringify(data));
+    if (data.accessToken) {
+      localStorage.setItem("token", data.accessToken);
+    }
+    window.location.href = "/";
+  }, []);
+
+  const handleGoogleSignup = useCallback(
+    async (response) => {
+      if (!response?.credential) {
+        setServerError("Google signup failed. Please try again.");
+        return;
+      }
+
+      setServerError("");
+      setSuccessMessage("");
+      setGoogleLoading(true);
+
+      try {
+        const signupResponse = await fetch(
+          "http://localhost:8080/api/auth/google/student-login",
+          {
+            method: "POST",
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ credential: response.credential }),
+          },
+        );
+
+        const data = await signupResponse.json();
+        if (signupResponse.ok) {
+          handleGoogleAuthSuccess(data);
+          return;
+        }
+
+        setServerError(data.message || "Google signup failed. Please try again.");
+      } catch {
+        setServerError(
+          "Could not connect to the server. Please try again later.",
+        );
+      } finally {
+        setGoogleLoading(false);
+      }
+    },
+    [handleGoogleAuthSuccess],
+  );
+
+  useEffect(() => {
+    if (role !== "student") {
+      if (googleButtonRef.current) {
+        googleButtonRef.current.innerHTML = "";
+      }
+      return;
+    }
+
+    const googleAccounts = window.google?.accounts?.id;
+    if (!googleAccounts) {
+      setServerError(
+        "Google Sign-In is not available right now. Please refresh the page.",
+      );
+      return;
+    }
+
+    googleAccounts.initialize({
+      client_id: GOOGLE_CLIENT_ID,
+      callback: handleGoogleSignup,
+    });
+
+    const renderGoogleButton = () => {
+      if (!googleButtonRef.current) return;
+      googleButtonRef.current.innerHTML = "";
+      const buttonWidth = Math.min(
+        400,
+        Math.max(200, Math.floor(googleButtonRef.current.offsetWidth)),
+      );
+      googleAccounts.renderButton(googleButtonRef.current, {
+        theme: "outline",
+        size: "large",
+        shape: "pill",
+        width: buttonWidth,
+        text: "continue_with",
+      });
+    };
+
+    renderGoogleButton();
+    window.addEventListener("resize", renderGoogleButton);
+
+    return () => {
+      window.removeEventListener("resize", renderGoogleButton);
+      if (googleButtonRef.current) {
+        googleButtonRef.current.innerHTML = "";
+      }
+    };
+  }, [GOOGLE_CLIENT_ID, handleGoogleSignup, role]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -284,11 +387,27 @@ const RegisterPage = () => {
           >
             {loading ? "Registering..." : "Register"}
           </button>
+
+          {role === "student" && (
+            <>
+              <div className="oauth-divider">
+                <span>or</span>
+              </div>
+              <div className="google-register-block">
+                <div id="googleRegisterDiv" ref={googleButtonRef}></div>
+                {googleLoading && (
+                  <span className="google-loading-text">
+                    Completing Google signup...
+                  </span>
+                )}
+              </div>
+            </>
+          )}
         </form>
 
         <div className="auth-footer">
           <p>
-            Already have an account? <Link to="/login">Sign in</Link>
+            Already have an account? <Link to="/login">Login</Link>
           </p>
         </div>
       </div>

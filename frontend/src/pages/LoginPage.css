@@ -29,6 +29,63 @@
   gap: 8px;
 }
 
+.role-selection {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.role-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  width: 80px;
+}
+
+.role-options {
+  display: flex;
+  gap: 24px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.radio-label input[type="radio"] {
+  display: none;
+}
+
+.radio-custom {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  display: inline-block;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.radio-label input[type="radio"]:checked + .radio-custom {
+  border-color: var(--primary);
+}
+
+.radio-label input[type="radio"]:checked + .radio-custom::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  background-color: var(--primary);
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 .form-group label {
   font-size: 14px;
   font-weight: 500;
@@ -114,8 +171,56 @@
   width: 100%;
 }
 
+.login-page .primary-btn.full-width {
+  width: 100%;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .mt-4 {
   margin-top: 16px;
+}
+
+.oauth-divider {
+  position: relative;
+  text-align: center;
+  margin-top: 8px;
+}
+
+.oauth-divider::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  border-top: 1px solid var(--border);
+}
+
+.oauth-divider span {
+  position: relative;
+  background: #fff;
+  padding: 0 10px;
+  font-size: 13px;
+  color: #718096;
+}
+
+.google-login-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+#googleSignInDiv {
+  width: 100%;
+  max-width: 400px;
+}
+
+.google-loading-text {
+  font-size: 12px;
+  color: #4a5568;
 }
 
 .error-text {

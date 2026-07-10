@@ -1,6 +1,7 @@
 package com.tutor_finder.tutorfinder.controller;
 
 import com.tutor_finder.tutorfinder.dto.LoginRequest;
+import com.tutor_finder.tutorfinder.dto.GoogleLoginRequest;
 import com.tutor_finder.tutorfinder.dto.RegisterRequest;
 import com.tutor_finder.tutorfinder.model.StudentProfile;
 import com.tutor_finder.tutorfinder.model.TutorProfile;
@@ -113,6 +114,49 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid email or password"));
     }
 
+    @PostMapping("/google/student-login")
+    public ResponseEntity<?> googleStudentLogin(@RequestBody GoogleLoginRequest req) {
+        if (req == null || req.getCredential() == null || req.getCredential().isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Google credential is required"));
+        }
+
+        try {
+            var googlePayload = authenticationService.verifyGoogleIdToken(req.getCredential());
+
+            if (!googlePayload.emailVerified()) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(Map.of("message", "Google account email is not verified."));
+            }
+
+            Optional<User> existingUserOpt = userRepository.findByEmail(googlePayload.email());
+
+            if (existingUserOpt.isPresent() && existingUserOpt.get().getRole() != Role.STUDENT) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("message", "Google login is available for students only."));
+            }
+
+            User user = existingUserOpt.orElseGet(() -> createGoogleStudentUser(googlePayload));
+            ensureStudentProfileExists(user);
+
+            var authResponse = authenticationService.issueTokensForUser(user);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", "Login successful");
+            response.put("userId", user.getId());
+            response.put("name", user.getName());
+            response.put("role", user.getRole());
+            response.put("verified", user.isVerified());
+            response.put("accessToken", authResponse.getAccessToken());
+            response.put("refreshToken", authResponse.getRefreshToken());
+            response.put("token", authResponse.getAccessToken());
+            return ResponseEntity.ok(response);
+        } catch (IllegalStateException ex) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of("message", ex.getMessage()));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", ex.getMessage()));
+        }
+    }
+
     @PostMapping("/forgot-password")
     public ResponseEntity<?> forgotPassword(@RequestBody Map<String, String> request) {
         String email = request.get("email");
@@ -135,5 +179,31 @@ public class AuthController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
+    }
+
+    private User createGoogleStudentUser(AuthenticationService.GoogleTokenPayload googlePayload) {
+        String generatedPhone = "google-" + googlePayload.subject();
+        String displayName = (googlePayload.name() == null || googlePayload.name().isBlank())
+                ? googlePayload.email()
+                : googlePayload.name();
+
+        User user = new User();
+        user.setName(displayName);
+        user.setEmail(googlePayload.email());
+        user.setPhone(generatedPhone);
+        user.setRole(Role.STUDENT);
+        user.setPassword(null);
+        user.setVerified(true);
+        return userRepository.save(user);
+    }
+
+    private void ensureStudentProfileExists(User user) {
+        if (studentProfileRepository.findByUserId(user.getId()).isPresent()) {
+            return;
+        }
+
+        StudentProfile studentProfile = new StudentProfile();
+        studentProfile.setUser(user);
+        studentProfileRepository.save(studentProfile);
     }
 }

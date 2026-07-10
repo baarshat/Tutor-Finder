@@ -8,12 +8,16 @@ import com.tutor_finder.tutorfinder.model.RefreshToken;
 import com.tutor_finder.tutorfinder.model.User;
 import com.tutor_finder.tutorfinder.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Random;
 
 @Service
@@ -26,6 +30,10 @@ public class AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
     private final EmailService emailService;
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    @Value("${google.oauth.client-id:}")
+    private String googleOauthClientId;
 
     public AuthenticationResponse register(RegisterRequest request) {
         if (repository.existsByEmail(request.getEmail())) {
@@ -70,6 +78,57 @@ public class AuthenticationService {
                 .accessToken(jwtToken)
                 .refreshToken(refreshToken.getToken())
                 .build();
+    }
+
+    public AuthenticationResponse issueTokensForUser(User user) {
+        var jwtToken = jwtService.generateAccessToken(user);
+        var refreshToken = refreshTokenService.createRefreshToken(user.getEmail());
+
+        return AuthenticationResponse.builder()
+                .accessToken(jwtToken)
+                .refreshToken(refreshToken.getToken())
+                .build();
+    }
+
+    public GoogleTokenPayload verifyGoogleIdToken(String idToken) {
+        if (googleOauthClientId == null || googleOauthClientId.isBlank()) {
+            throw new IllegalStateException("Google OAuth client ID is not configured on the server.");
+        }
+
+        final String tokenInfoUrl = "https://oauth2.googleapis.com/tokeninfo?id_token={idToken}";
+        final Map<String, Object> payload;
+
+        try {
+            payload = restTemplate.getForObject(tokenInfoUrl, Map.class, idToken);
+        } catch (RestClientException ex) {
+            throw new IllegalArgumentException("Invalid Google credential.");
+        }
+
+        if (payload == null) {
+            throw new IllegalArgumentException("Invalid Google credential.");
+        }
+
+        String audience = valueAsString(payload.get("aud"));
+        if (!googleOauthClientId.equals(audience)) {
+            throw new IllegalArgumentException("Google credential audience mismatch.");
+        }
+
+        String issuer = valueAsString(payload.get("iss"));
+        if (!"https://accounts.google.com".equals(issuer) && !"accounts.google.com".equals(issuer)) {
+            throw new IllegalArgumentException("Invalid Google credential issuer.");
+        }
+
+        String email = valueAsString(payload.get("email"));
+        String name = valueAsString(payload.get("name"));
+        String sub = valueAsString(payload.get("sub"));
+        String emailVerifiedValue = valueAsString(payload.get("email_verified"));
+        boolean emailVerified = "true".equalsIgnoreCase(emailVerifiedValue);
+
+        if (email == null || email.isBlank() || sub == null || sub.isBlank()) {
+            throw new IllegalArgumentException("Google credential is missing required profile information.");
+        }
+
+        return new GoogleTokenPayload(email, name, sub, emailVerified);
     }
 
     public AuthenticationResponse refreshToken(RefreshTokenRequest request) {
@@ -117,5 +176,17 @@ public class AuthenticationService {
         user.setResetPasswordOtp(null);
         user.setResetPasswordOtpExpiry(null);
         repository.save(user);
+    }
+
+    public record GoogleTokenPayload(
+            String email,
+            String name,
+            String subject,
+            boolean emailVerified
+    ) {
+    }
+
+    private String valueAsString(Object value) {
+        return value == null ? null : String.valueOf(value);
     }
 }
