@@ -85,6 +85,44 @@ const Navbar = () => {
     loadNotifications();
   }, [user]);
 
+  useEffect(() => {
+    const loadProfilePic = async () => {
+      // Fetch fresh user data to ensure the profile picture is always populated even after a fresh login.
+      if (!user || user.profilePicLoaded) return;
+      
+      const userId = user.userId || user.id;
+      if (!userId) return;
+
+      try {
+        const token = user.token || user.accessToken || user.jwtToken || localStorage.getItem("token") || "";
+        const userRes = await fetch(`http://localhost:8080/api/users/${userId}`, {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          }
+        });
+        
+        if (userRes.ok) {
+          const userData = await userRes.json();
+          if (userData.profilePicUrl && userData.profilePicUrl !== user.profilePicUrl) {
+            const updatedUser = { ...user, profilePicUrl: userData.profilePicUrl, profilePicLoaded: true };
+            // Update state safely
+            setUser(updatedUser);
+            // Optionally sync it back into localStorage so we don't have to fetch it constantly
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+          } else {
+             setUser(prev => ({...prev, profilePicLoaded: true}));
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load navbar profile pic", err);
+      }
+    };
+    
+    // Only load if not already attempted
+    loadProfilePic();
+  }, [user]);
+
   const getInitials = (name) => {
     if (!name) return "";
     return name
@@ -166,7 +204,160 @@ const Navbar = () => {
           )}
         </div>
         <div className="navbar-actions">
-          {!user && (
+          {user ? (
+            <div className="user-profile">
+              <div className="notification-wrapper">
+                <button
+                  className="notification-button"
+                  onClick={() => setDropdownOpen((prev) => !prev)}
+                  type="button"
+                >
+                  <Bell size={20} />
+                  {notifications.length > 0 && (
+                    <span className="notification-badge">
+                      {notifications.length}
+                    </span>
+                  )}
+                </button>
+                {dropdownOpen && (
+                  <div className="notification-dropdown">
+                    <div className="notification-header">
+                      <span>Notifications</span>
+                      {notifications.length > 0 && (
+                        <button
+                          type="button"
+                          className="notification-clear"
+                          onClick={async () => {
+                            const token =
+                              user.token ||
+                              user.accessToken ||
+                              user.jwtToken ||
+                              localStorage.getItem("token") ||
+                              "";
+                            await fetch(
+                              "http://localhost:8080/api/notifications/read-all",
+                              {
+                                method: "PUT",
+                                headers: {
+                                  "Content-Type": "application/json",
+                                  ...(token
+                                    ? { Authorization: `Bearer ${token}` }
+                                    : {}),
+                                },
+                              },
+                            );
+                            setNotifications([]);
+                          }}
+                        >
+                          Mark all read
+                        </button>
+                      )}
+                    </div>
+                    {notifications.length === 0 ? (
+                      <p className="notification-empty">
+                        No new notifications.
+                      </p>
+                    ) : (
+                      notifications.map((note) => (
+                        <div key={note.id} className="notification-item">
+                          <p>{note.message}</p>
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              const token =
+                                user.token ||
+                                user.accessToken ||
+                                user.jwtToken ||
+                                localStorage.getItem("token") ||
+                                "";
+                              await fetch(
+                                `http://localhost:8080/api/notifications/${note.id}/read`,
+                                {
+                                  method: "PUT",
+                                  headers: {
+                                    "Content-Type": "application/json",
+                                    ...(token
+                                      ? { Authorization: `Bearer ${token}` }
+                                      : {}),
+                                  },
+                                },
+                              );
+                              setNotifications((prev) =>
+                                prev.filter((item) => item.id !== note.id),
+                              );
+                            }}
+                          >
+                            Mark read
+                          </button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+              <div className="user-avatar-container" title={user.name}>
+                {user.profilePicUrl ? (
+                  <img
+                    src={user.profilePicUrl.startsWith("data:") || user.profilePicUrl.startsWith("http") ? user.profilePicUrl : `data:image/jpeg;base64,${user.profilePicUrl}`}
+                    alt={user.name}
+                    className="user-avatar-img"
+                    onClick={() => setAvatarDropdownOpen((prev) => !prev)}
+                  />
+                ) : (
+                  <div
+                    className="user-avatar"
+                    onClick={() => setAvatarDropdownOpen((prev) => !prev)}
+                  >
+                    {getInitials(user.name)}
+                  </div>
+                )}
+
+                {avatarDropdownOpen && (
+                  <div className="avatar-dropdown-menu">
+                    <div className="dropdown-user-header">
+                      <span className="dropdown-user-name">{user.name}</span>
+                      <span className="dropdown-user-role">{user.role}</span>
+                    </div>
+                    <hr className="dropdown-divider" />
+                    <Link
+                      to="/settings"
+                      className="dropdown-item"
+                      onClick={() => setAvatarDropdownOpen(false)}
+                    >
+                      Personal Settings
+                    </Link>
+                    {user.role === "TUTOR" && (
+                      <Link
+                        to="/tutor/availability"
+                        className="dropdown-item"
+                        onClick={() => setAvatarDropdownOpen(false)}
+                      >
+                        Availability
+                      </Link>
+                    )}
+                    <Link
+                      to="/bookings"
+                      className="dropdown-item"
+                      onClick={() => setAvatarDropdownOpen(false)}
+                    >
+                      Bookings
+                    </Link>
+                    <hr className="dropdown-divider" />
+                    <button
+                      type="button"
+                      className="dropdown-item logout-btn"
+                      onClick={() => {
+                        setAvatarDropdownOpen(false);
+                        confirmLogout();
+                      }}
+                    >
+                      Log Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
             <>
               <Link to="/login">
                 <button className="secondary-btn">Log In</button>
