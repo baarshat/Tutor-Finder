@@ -24,7 +24,6 @@ import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
 public class BookingService {
 
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
@@ -36,6 +35,7 @@ public class BookingService {
     private final NotificationService notificationService;
     private final EmailService emailService;
 
+    @Transactional
     public Booking createBooking(User student, BookingRequest request) {
         if (student == null) {
             throw new AccessDeniedException("User not authenticated");
@@ -143,6 +143,7 @@ public class BookingService {
         return savedBooking;
     }
 
+    @Transactional(readOnly = true)
     public List<Booking> getBookingsForUser(User user, String type) {
         if (user == null) {
             throw new AccessDeniedException("User not authenticated");
@@ -173,26 +174,33 @@ public class BookingService {
             throw new IllegalArgumentException("User not authenticated");
         }
 
-        Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new NoSuchElementException("Booking not found"));
-
-        // Only the assigned tutor can mark as completed
-        boolean isTutorOwner = booking.getTutorProfile().getUser().getId().equals(user.getId());
-        if (!isTutorOwner) {
-            throw new AccessDeniedException("Only the assigned tutor can mark this session as completed");
-        }
-
-        if (booking.getStatus() == BookingStatus.CANCELLED) {
-            throw new IllegalArgumentException("Cannot complete a cancelled booking");
-        }
-
-        booking.setStatus(BookingStatus.COMPLETED);
-        Booking savedBooking = bookingRepository.save(booking);
+        Booking savedBooking = updateBookingStatus(bookingId, user, BookingStatus.COMPLETED);
 
         // Send notifications and emails in separate transaction to prevent rollback on email failure
         sendSessionCompletionNotifications(savedBooking);
 
         return savedBooking;
+    }
+
+    @Transactional
+    private Booking updateBookingStatus(Long bookingId, User user, BookingStatus status) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new NoSuchElementException("Booking not found"));
+
+        if (status == BookingStatus.COMPLETED) {
+            // Only the assigned tutor can mark as completed
+            boolean isTutorOwner = booking.getTutorProfile().getUser().getId().equals(user.getId());
+            if (!isTutorOwner) {
+                throw new AccessDeniedException("Only the assigned tutor can mark this session as completed");
+            }
+
+            if (booking.getStatus() == BookingStatus.CANCELLED) {
+                throw new IllegalArgumentException("Cannot complete a cancelled booking");
+            }
+        }
+
+        booking.setStatus(status);
+        return bookingRepository.save(booking);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
@@ -227,6 +235,16 @@ public class BookingService {
             throw new IllegalArgumentException("User not authenticated");
         }
 
+        Booking savedBooking = doCancelBooking(user, bookingId);
+
+        // Send notifications and emails in separate transaction to prevent rollback on email failure
+        sendBookingCancellationNotifications(savedBooking);
+
+        return savedBooking;
+    }
+
+    @Transactional
+    private Booking doCancelBooking(User user, Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Booking not found"));
 
@@ -238,12 +256,7 @@ public class BookingService {
         }
 
         booking.setStatus(BookingStatus.CANCELLED);
-        Booking savedBooking = bookingRepository.save(booking);
-
-        // Send notifications and emails in separate transaction to prevent rollback on email failure
-        sendBookingCancellationNotifications(savedBooking);
-
-        return savedBooking;
+        return bookingRepository.save(booking);
     }
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
