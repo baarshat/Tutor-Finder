@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Bell } from "lucide-react";
+import { Bell, Menu, X } from "lucide-react";
 import { toast } from "react-toastify";
 import "./Navbar.css";
 
@@ -12,7 +12,18 @@ const Navbar = () => {
   const [notifications, setNotifications] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [avatarDropdownOpen, setAvatarDropdownOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     const handleStorageChange = () => {
@@ -27,7 +38,10 @@ const Navbar = () => {
     window.addEventListener("storage", handleStorageChange);
 
     const handleOutsideClick = (e) => {
-      if (!e.target.closest(".user-avatar-container") && !e.target.closest(".notification-wrapper")) {
+      if (
+        !e.target.closest(".user-avatar-container") &&
+        !e.target.closest(".notification-wrapper")
+      ) {
         setAvatarDropdownOpen(false);
         setDropdownOpen(false);
       }
@@ -89,36 +103,51 @@ const Navbar = () => {
     const loadProfilePic = async () => {
       // Fetch fresh user data to ensure the profile picture is always populated even after a fresh login.
       if (!user || user.profilePicLoaded) return;
-      
+
       const userId = user.userId || user.id;
       if (!userId) return;
 
       try {
-        const token = user.token || user.accessToken || user.jwtToken || localStorage.getItem("token") || "";
-        const userRes = await fetch(`http://localhost:8080/api/users/${userId}`, {
-          headers: {
-            "Content-Type": "application/json",
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          }
-        });
-        
+        const token =
+          user.token ||
+          user.accessToken ||
+          user.jwtToken ||
+          localStorage.getItem("token") ||
+          "";
+        const userRes = await fetch(
+          `http://localhost:8080/api/users/${userId}`,
+          {
+            headers: {
+              "Content-Type": "application/json",
+              ...(token ? { Authorization: `Bearer ${token}` } : {}),
+            },
+          },
+        );
+
         if (userRes.ok) {
           const userData = await userRes.json();
-          if (userData.profilePicUrl && userData.profilePicUrl !== user.profilePicUrl) {
-            const updatedUser = { ...user, profilePicUrl: userData.profilePicUrl, profilePicLoaded: true };
+          if (
+            userData.profilePicUrl &&
+            userData.profilePicUrl !== user.profilePicUrl
+          ) {
+            const updatedUser = {
+              ...user,
+              profilePicUrl: userData.profilePicUrl,
+              profilePicLoaded: true,
+            };
             // Update state safely
             setUser(updatedUser);
             // Optionally sync it back into localStorage so we don't have to fetch it constantly
             localStorage.setItem("user", JSON.stringify(updatedUser));
           } else {
-             setUser(prev => ({...prev, profilePicLoaded: true}));
+            setUser((prev) => ({ ...prev, profilePicLoaded: true }));
           }
         }
       } catch (err) {
         console.error("Failed to load navbar profile pic", err);
       }
     };
-    
+
     // Only load if not already attempted
     loadProfilePic();
   }, [user]);
@@ -184,8 +213,12 @@ const Navbar = () => {
     );
   };
 
+  const closeMobileMenu = () => {
+    setMobileMenuOpen(false);
+  };
+
   return (
-    <nav className="navbar">
+    <nav className={`navbar ${isScrolled ? "navbar-scrolled" : ""}`}>
       <div className="navbar-container">
         <div className="navbar-left">
           <Link to="/" className="navbar-logo">
@@ -199,6 +232,12 @@ const Navbar = () => {
               </NavLink>
               <NavLink to="/find-tutors" className="nav-link">
                 Find Tutor
+              </NavLink>
+              <NavLink to="/about-us" className="nav-link">
+                About Us
+              </NavLink>
+              <NavLink to="/contact-us" className="nav-link">
+                Contact Us
               </NavLink>
             </div>
           )}
@@ -298,7 +337,12 @@ const Navbar = () => {
               <div className="user-avatar-container" title={user.name}>
                 {user.profilePicUrl ? (
                   <img
-                    src={user.profilePicUrl.startsWith("data:") || user.profilePicUrl.startsWith("http") ? user.profilePicUrl : `data:image/jpeg;base64,${user.profilePicUrl}`}
+                    src={
+                      user.profilePicUrl.startsWith("data:") ||
+                      user.profilePicUrl.startsWith("http")
+                        ? user.profilePicUrl
+                        : `data:image/jpeg;base64,${user.profilePicUrl}`
+                    }
                     alt={user.name}
                     className="user-avatar-img"
                     onClick={() => setAvatarDropdownOpen((prev) => !prev)}
@@ -368,7 +412,89 @@ const Navbar = () => {
             </>
           )}
         </div>
+        
+        {/* Mobile Menu Button */}
+        <button
+          className="mobile-menu-button"
+          onClick={() => setMobileMenuOpen((prev) => !prev)}
+          type="button"
+          aria-label="Toggle menu"
+        >
+          {mobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
       </div>
+
+      {/* Mobile Menu Drawer */}
+      {mobileMenuOpen && (
+        <div className="mobile-menu-drawer">
+          {!user ? (
+           <>
+             <NavLink
+               to="/"
+               className="mobile-menu-link"
+               end
+               onClick={closeMobileMenu}
+             >
+               Home
+             </NavLink>
+             <NavLink
+               to="/find-tutors"
+               className="mobile-menu-link"
+               onClick={closeMobileMenu}
+             >
+               Find Tutor
+             </NavLink>
+             <hr className="mobile-menu-divider" />
+             <Link to="/login" onClick={closeMobileMenu}>
+               <button className="mobile-menu-btn secondary-btn">
+                 Log In
+               </button>
+             </Link>
+             <Link to="/register" onClick={closeMobileMenu}>
+               <button className="mobile-menu-btn primary-btn">
+                 Sign Up
+               </button>
+             </Link>
+           </>
+          ) : (
+           <>
+             <Link
+               to="/settings"
+               className="mobile-menu-link"
+               onClick={closeMobileMenu}
+             >
+               Personal Settings
+             </Link>
+             {user.role === "TUTOR" && (
+               <Link
+                 to="/tutor/availability"
+                 className="mobile-menu-link"
+                 onClick={closeMobileMenu}
+               >
+                 Availability
+               </Link>
+             )}
+             <Link
+               to="/bookings"
+               className="mobile-menu-link"
+               onClick={closeMobileMenu}
+             >
+               Bookings
+             </Link>
+             <hr className="mobile-menu-divider" />
+             <button
+               className="mobile-menu-link logout-link"
+               onClick={() => {
+                 closeMobileMenu();
+                 confirmLogout();
+               }}
+             >
+               Log Out
+             </button>
+           </>
+          )}
+        </div>
+      )}
     </nav>
   );
 };

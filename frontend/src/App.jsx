@@ -38,6 +38,10 @@ import TutorAvailabilityPage from "./pages/TutorAvailabilityPage";
 import TutorDetailPage from "./pages/TutorDetailPage";
 import SettingsPage from "./pages/SettingsPage";
 import MessagingPage from "./pages/MessagingPage";
+import ContactUsPage from "./pages/ContactUsPage";
+import AboutUsPage from "./pages/AboutUsPage";
+import TermsAndConditionsPage from "./pages/TermsAndConditionsPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 
 // CSS for superadmin layout
 import "./components/superadmin/Layout.css";
@@ -45,7 +49,12 @@ import "./components/superadmin/Layout.css";
 function AppContent() {
   const location = useLocation();
   const navigate = useNavigate();
-  const hideNavbarFooter = ["/login", "/register", "/forgot-password", "/reset-password"].includes(location.pathname);
+  const hideNavbarFooter = [
+    "/login",
+    "/register",
+    "/forgot-password",
+    "/reset-password",
+  ].includes(location.pathname);
   const API_BASE = "http://localhost:8080";
 
   const userStr = localStorage.getItem("user");
@@ -151,7 +160,9 @@ function AppContent() {
     }
   }, [user, tutorStatus, tutorStatusLoaded, location, navigate]);
 
-  const isPublicPage = ["/", "/find-tutors"].includes(location.pathname) || location.pathname.startsWith("/tutors/");
+  const isPublicPage =
+    ["/", "/find-tutors"].includes(location.pathname) ||
+    location.pathname.startsWith("/tutors/");
 
   return (
     <div className="app-container">
@@ -170,6 +181,10 @@ function AppContent() {
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/find-tutors" element={<FindTutorPage />} />
                     <Route path="/tutors/:id" element={<TutorDetailPage />} />
+                    <Route path="/contact-us" element={<ContactUsPage />} />
+                    <Route path="/about-us" element={<AboutUsPage />} />
+                    <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
+                    <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
                     <Route
                       path="/bookings"
                       element={<BookingsDashboardPage />}
@@ -178,14 +193,8 @@ function AppContent() {
                       path="/tutor/availability"
                       element={<TutorAvailabilityPage />}
                     />
-                    <Route
-                      path="/settings"
-                      element={<SettingsPage />}
-                    />
-                    <Route
-                      path="/messages"
-                      element={<MessagingPage />}
-                    />
+                    <Route path="/settings" element={<SettingsPage />} />
+                    <Route path="/messages" element={<MessagingPage />} />
 
                     {/* Superadmin Routes */}
                     <Route
@@ -234,6 +243,10 @@ function AppContent() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/find-tutors" element={<FindTutorPage />} />
             <Route path="/tutors/:id" element={<TutorDetailPage />} />
+            <Route path="/contact-us" element={<ContactUsPage />} />
+            <Route path="/about-us" element={<AboutUsPage />} />
+            <Route path="/terms-and-conditions" element={<TermsAndConditionsPage />} />
+            <Route path="/privacy-policy" element={<PrivacyPolicyPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route path="/forgot-password" element={<ForgotPasswordPage />} />
