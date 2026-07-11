@@ -78,7 +78,6 @@ export default function Students() {
                 <th>Name</th>
                 <th>Email</th>
                 <th>Phone</th>
-                <th>Grade Level</th>
                 <th>Actions</th>
               </tr>
             </thead>
@@ -103,7 +102,6 @@ export default function Students() {
                     </td>
                     <td>{s.userEmail || s.user?.email || "—"}</td>
                     <td>{s.userPhone || s.user?.phone || "—"}</td>
-                    <td>{s.currentClass || s.gradeLevel || "—"}</td>
                     <td>
                       <div className="sa-action-icons">
                         <button

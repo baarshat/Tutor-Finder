@@ -24,6 +24,7 @@ import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BookingService {
 
     private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
@@ -35,7 +36,6 @@ public class BookingService {
     private final NotificationService notificationService;
     private final EmailService emailService;
 
-    @Transactional
     public Booking createBooking(User student, BookingRequest request) {
         if (student == null) {
             throw new AccessDeniedException("User not authenticated");
@@ -143,7 +143,6 @@ public class BookingService {
         return savedBooking;
     }
 
-    @Transactional(readOnly = true)
     public List<Booking> getBookingsForUser(User user, String type) {
         if (user == null) {
             throw new AccessDeniedException("User not authenticated");
@@ -174,60 +173,42 @@ public class BookingService {
             throw new IllegalArgumentException("User not authenticated");
         }
 
-        Booking savedBooking = updateBookingStatus(bookingId, user, BookingStatus.COMPLETED);
-
-        // Send notifications and emails in separate transaction to prevent rollback on email failure
-        sendSessionCompletionNotifications(savedBooking);
-
-        return savedBooking;
-    }
-
-    @Transactional
-    private Booking updateBookingStatus(Long bookingId, User user, BookingStatus status) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Booking not found"));
 
-        if (status == BookingStatus.COMPLETED) {
-            // Only the assigned tutor can mark as completed
-            boolean isTutorOwner = booking.getTutorProfile().getUser().getId().equals(user.getId());
-            if (!isTutorOwner) {
-                throw new AccessDeniedException("Only the assigned tutor can mark this session as completed");
-            }
-
-            if (booking.getStatus() == BookingStatus.CANCELLED) {
-                throw new IllegalArgumentException("Cannot complete a cancelled booking");
-            }
+        // Only the assigned tutor can mark as completed
+        boolean isTutorOwner = booking.getTutorProfile().getUser().getId().equals(user.getId());
+        if (!isTutorOwner) {
+            throw new AccessDeniedException("Only the assigned tutor can mark this session as completed");
         }
 
-        booking.setStatus(status);
-        return bookingRepository.save(booking);
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void sendSessionCompletionNotifications(Booking booking) {
-        try {
-            // Notify student
-            String studentMessage = String.format(
-                    Locale.US,
-                    "Your session with %s on %s has been marked as completed. You can now leave a review.",
-                    booking.getTutorProfile().getUser().getName(),
-                    booking.getStartTime().toLocalDate()
-            );
-            notificationService.create(booking.getStudent(), studentMessage, NotificationType.GENERAL);
-
-            // Send Email to student
-            String emailSubject = "Session Completed - TutorFinder";
-            String studentEmailBody = String.format(
-                    "Dear %s,\n\nYour session with tutor %s on %s has been marked as completed.\n\nYou can now provide a rating and review for this session by visiting your dashboard.\n\nBest regards,\nTutorFinder Team",
-                    booking.getStudentName(),
-                    booking.getTutorProfile().getUser().getName(),
-                    booking.getStartTime().toLocalDate()
-            );
-            emailService.sendEmail(booking.getStudentEmail(), emailSubject, studentEmailBody);
-        } catch (Exception e) {
-            System.err.println("Error sending session completion notification for booking ID " + booking.getId() + ": " + e.getMessage());
-            e.printStackTrace();
+        if (booking.getStatus() == BookingStatus.CANCELLED) {
+            throw new IllegalArgumentException("Cannot complete a cancelled booking");
         }
+
+        booking.setStatus(BookingStatus.COMPLETED);
+        Booking savedBooking = bookingRepository.save(booking);
+
+        // Notify student
+        String studentMessage = String.format(
+                Locale.US,
+                "Your session with %s on %s has been marked as completed. You can now leave a review.",
+                booking.getTutorProfile().getUser().getName(),
+                booking.getStartTime().toLocalDate()
+        );
+        notificationService.create(booking.getStudent(), studentMessage, NotificationType.GENERAL);
+
+        // Send Email to student
+        String emailSubject = "Session Completed - TutorFinder";
+        String studentEmailBody = String.format(
+                "Dear %s,\n\nYour session with tutor %s on %s has been marked as completed.\n\nYou can now provide a rating and review for this session by visiting your dashboard.\n\nBest regards,\nTutorFinder Team",
+                booking.getStudentName(),
+                booking.getTutorProfile().getUser().getName(),
+                booking.getStartTime().toLocalDate()
+        );
+        emailService.sendEmail(booking.getStudentEmail(), emailSubject, studentEmailBody);
+
+        return savedBooking;
     }
 
     public Booking cancelBooking(User user, Long bookingId) {
@@ -235,16 +216,6 @@ public class BookingService {
             throw new IllegalArgumentException("User not authenticated");
         }
 
-        Booking savedBooking = doCancelBooking(user, bookingId);
-
-        // Send notifications and emails in separate transaction to prevent rollback on email failure
-        sendBookingCancellationNotifications(savedBooking);
-
-        return savedBooking;
-    }
-
-    @Transactional
-    private Booking doCancelBooking(User user, Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new NoSuchElementException("Booking not found"));
 
@@ -256,55 +227,48 @@ public class BookingService {
         }
 
         booking.setStatus(BookingStatus.CANCELLED);
-        return bookingRepository.save(booking);
-    }
+        Booking savedBooking = bookingRepository.save(booking);
 
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void sendBookingCancellationNotifications(Booking booking) {
-        try {
-            String tutorMessage = String.format(
-                    Locale.US,
-                    "Booking for %s at %s was cancelled.",
-                    booking.getStartTime().toLocalDate(),
-                    booking.getStartTime().toLocalTime().format(TIME_FORMAT)
-            );
-            notificationService.create(booking.getTutorProfile().getUser(), tutorMessage, NotificationType.BOOKING_CANCELLED);
+        String tutorMessage = String.format(
+                Locale.US,
+                "Booking for %s at %s was cancelled.",
+                booking.getStartTime().toLocalDate(),
+                booking.getStartTime().toLocalTime().format(TIME_FORMAT)
+        );
+        notificationService.create(booking.getTutorProfile().getUser(), tutorMessage, NotificationType.BOOKING_CANCELLED);
 
-            String studentMessage = String.format(
-                    Locale.US,
-                    "Your booking for %s at %s was cancelled.",
-                    booking.getStartTime().toLocalDate(),
-                    booking.getStartTime().toLocalTime().format(TIME_FORMAT)
-            );
-            notificationService.create(booking.getStudent(), studentMessage, NotificationType.BOOKING_CANCELLED);
+        String studentMessage = String.format(
+                Locale.US,
+                "Your booking for %s at %s was cancelled.",
+                booking.getStartTime().toLocalDate(),
+                booking.getStartTime().toLocalTime().format(TIME_FORMAT)
+        );
+        notificationService.create(booking.getStudent(), studentMessage, NotificationType.BOOKING_CANCELLED);
 
-            // Send Email Notifications
-            String emailSubject = "Booking Cancelled - TutorFinder";
-            String tutorEmailBody = String.format(
-                    "Dear %s,\n\nThe booking with student %s for %s at %s has been cancelled.\n\nBest regards,\nTutorFinder Team",
-                    booking.getTutorProfile().getUser().getName(),
-                    booking.getStudentName(),
-                    booking.getStartTime().toLocalDate(),
-                    booking.getStartTime().toLocalTime().format(TIME_FORMAT)
-            );
-            String studentEmailBody = String.format(
-                    "Dear %s,\n\nYour booking with tutor %s for %s at %s has been cancelled.\n\nBest regards,\nTutorFinder Team",
-                    booking.getStudentName(),
-                    booking.getTutorProfile().getUser().getName(),
-                    booking.getStartTime().toLocalDate(),
-                    booking.getStartTime().toLocalTime().format(TIME_FORMAT)
-            );
+        // Send Email Notifications
+        String emailSubject = "Booking Cancelled - TutorFinder";
+        String tutorEmailBody = String.format(
+                "Dear %s,\n\nThe booking with student %s for %s at %s has been cancelled.\n\nBest regards,\nTutorFinder Team",
+                booking.getTutorProfile().getUser().getName(),
+                booking.getStudentName(),
+                booking.getStartTime().toLocalDate(),
+                booking.getStartTime().toLocalTime().format(TIME_FORMAT)
+        );
+        String studentEmailBody = String.format(
+                "Dear %s,\n\nYour booking with tutor %s for %s at %s has been cancelled.\n\nBest regards,\nTutorFinder Team",
+                booking.getStudentName(),
+                booking.getTutorProfile().getUser().getName(),
+                booking.getStartTime().toLocalDate(),
+                booking.getStartTime().toLocalTime().format(TIME_FORMAT)
+        );
 
-            emailService.sendEmail(booking.getTutorProfile().getUser().getEmail(), emailSubject, tutorEmailBody);
-            emailService.sendEmail(booking.getStudentEmail(), emailSubject, studentEmailBody);
-        } catch (Exception e) {
-            System.err.println("Error sending booking cancellation notification for booking ID " + booking.getId() + ": " + e.getMessage());
-            e.printStackTrace();
-        }
+        emailService.sendEmail(booking.getTutorProfile().getUser().getEmail(), emailSubject, tutorEmailBody);
+        emailService.sendEmail(booking.getStudentEmail(), emailSubject, studentEmailBody);
+
+        return savedBooking;
     }
 
     @Scheduled(fixedRate = 60000)
-    @Transactional(propagation = Propagation.NOT_SUPPORTED)
     public void checkUpcomingSessions() {
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime boundary = now.plusMinutes(15);
@@ -316,48 +280,43 @@ public class BookingService {
 
         for (Booking booking : upcomingBookings) {
             try {
-                sendSessionReminder(booking);
+                // Send db notification
+                String message = String.format(
+                        Locale.US,
+                        "Reminder: Your session is starting at %s.",
+                        booking.getStartTime().toLocalTime().format(TIME_FORMAT)
+                );
+                
+                notificationService.create(booking.getStudent(), message, NotificationType.GENERAL);
+                notificationService.create(booking.getTutorProfile().getUser(), message, NotificationType.GENERAL);
+
+                // Send email notification
+                String emailSubject = "Upcoming Session Reminder";
+                String studentEmailBody = String.format(
+                        "Dear %s,\n\nThis is a reminder that your session with tutor %s is starting at %s on %s.\n\nBest regards,\nTutorFinder Team",
+                        booking.getStudentName(),
+                        booking.getTutorProfile().getUser().getName(),
+                        booking.getStartTime().toLocalTime().format(TIME_FORMAT),
+                        booking.getStartTime().toLocalDate()
+                );
+                String tutorEmailBody = String.format(
+                        "Dear %s,\n\nThis is a reminder that your session with student %s is starting at %s on %s.\n\nBest regards,\nTutorFinder Team",
+                        booking.getTutorProfile().getUser().getName(),
+                        booking.getStudentName(),
+                        booking.getStartTime().toLocalTime().format(TIME_FORMAT),
+                        booking.getStartTime().toLocalDate()
+                );
+
+                emailService.sendEmail(booking.getStudentEmail(), emailSubject, studentEmailBody);
+                emailService.sendEmail(booking.getTutorProfile().getUser().getEmail(), emailSubject, tutorEmailBody);
+
+                // Mark reminder as sent
+                booking.setReminderSent(true);
+                bookingRepository.save(booking);
             } catch (Exception e) {
                 System.err.println("Error processing upcoming booking reminder for ID " + booking.getId() + ": " + e.getMessage());
                 e.printStackTrace();
             }
         }
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void sendSessionReminder(Booking booking) {
-        // Send db notification
-        String message = String.format(
-                Locale.US,
-                "Reminder: Your session is starting at %s.",
-                booking.getStartTime().toLocalTime().format(TIME_FORMAT)
-        );
-        
-        notificationService.create(booking.getStudent(), message, NotificationType.GENERAL);
-        notificationService.create(booking.getTutorProfile().getUser(), message, NotificationType.GENERAL);
-
-        // Send email notification
-        String emailSubject = "Upcoming Session Reminder";
-        String studentEmailBody = String.format(
-                "Dear %s,\n\nThis is a reminder that your session with tutor %s is starting at %s on %s.\n\nBest regards,\nTutorFinder Team",
-                booking.getStudentName(),
-                booking.getTutorProfile().getUser().getName(),
-                booking.getStartTime().toLocalTime().format(TIME_FORMAT),
-                booking.getStartTime().toLocalDate()
-        );
-        String tutorEmailBody = String.format(
-                "Dear %s,\n\nThis is a reminder that your session with student %s is starting at %s on %s.\n\nBest regards,\nTutorFinder Team",
-                booking.getTutorProfile().getUser().getName(),
-                booking.getStudentName(),
-                booking.getStartTime().toLocalTime().format(TIME_FORMAT),
-                booking.getStartTime().toLocalDate()
-        );
-
-        emailService.sendEmail(booking.getStudentEmail(), emailSubject, studentEmailBody);
-        emailService.sendEmail(booking.getTutorProfile().getUser().getEmail(), emailSubject, tutorEmailBody);
-
-        // Mark reminder as sent
-        booking.setReminderSent(true);
-        bookingRepository.save(booking);
     }
 }

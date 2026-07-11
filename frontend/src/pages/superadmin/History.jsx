@@ -107,7 +107,6 @@ export default function History() {
                   <th>Name</th>
                   <th>Email</th>
                   <th>Phone</th>
-                  <th>Grade</th>
                 </tr>
               </thead>
               <tbody>
@@ -126,7 +125,6 @@ export default function History() {
                       </td>
                       <td>{s.userEmail || s.user?.email || "—"}</td>
                       <td>{s.userPhone || s.user?.phone || "—"}</td>
-                      <td>{s.currentClass || s.gradeLevel || "—"}</td>
                     </tr>
                   ))
                 )}

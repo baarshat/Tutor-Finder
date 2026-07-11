@@ -367,8 +367,8 @@ const RegisterPage = () => {
             <label className="checkbox-label">
               <input type="checkbox" required />
               <span>
-                I accept <a href="#">Terms of Service</a> &{" "}
-                <a href="#">Privacy Policy</a>
+                I accept <a href="/terms-and-conditions">Terms of Service</a> &{" "}
+                <a href="/privacy-policy">Privacy Policy</a>
               </span>
             </label>
           </div>

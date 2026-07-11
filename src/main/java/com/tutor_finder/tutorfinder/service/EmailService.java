@@ -7,12 +7,15 @@ import org.springframework.stereotype.Service;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 
+import org.springframework.scheduling.annotation.Async;
+
 @Service
 public class EmailService {
 
     @Autowired
     private JavaMailSender mailSender;
 
+    @Async
     public void sendEmail(String to, String subject, String body) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
