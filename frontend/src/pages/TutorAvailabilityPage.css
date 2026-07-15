@@ -1,15 +1,23 @@
 .availability-page {
-  max-width: 900px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 3rem 2rem;
 }
 
 .availability-header {
-  margin-bottom: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 50px;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  gap: 1rem;
 }
 
 .availability-header h2 {
-  margin-bottom: 0.5rem;
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 50px;
 }
 
 .availability-header p {

@@ -1,16 +1,23 @@
 .bookings-page {
-  max-width: 1300px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 1.5rem 1rem;
 }
 
 .bookings-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 1rem;
-  gap: 1.5rem;
+  height: 50px;
+  margin-bottom: 1.25rem;
+  gap: 1rem;
   flex-wrap: wrap;
+}
+
+.bookings-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 50px;
 }
 
 .bookings-tabs {

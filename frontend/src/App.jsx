@@ -63,6 +63,10 @@ function AppContent() {
   const [tutorStatusLoaded, setTutorStatusLoaded] = useState(false);
 
   useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
+
+  useEffect(() => {
     let isActive = true;
 
     const loadTutorStatus = async () => {

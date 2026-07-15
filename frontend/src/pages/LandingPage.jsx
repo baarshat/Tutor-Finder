@@ -180,10 +180,9 @@ const LandingPage = () => {
                 </div>
               </div>
             </div>
-            <button className="primary-btn">Start Teaching Today</button>
-            {/* <Link to="/register">
-              <button className="primary-btn">Start Teaching Today</button>
-            </Link> */}
+            <Link to="/register" style={{ borderRadius: "60px",cursor: "pointer",}}>
+              <button className="p-btn">Start Teaching Today</button>
+            </Link>
           </div>
         </div>
       </section>

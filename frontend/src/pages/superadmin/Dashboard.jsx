@@ -80,7 +80,7 @@ export default function SuperadminDashboard() {
   };
 
   return (
-    <div className="sa-dashboard">
+    <div className="sa-page">
       <div className="sa-page-header">
         <div>
           <h1 className="sa-section-title" style={{ fontSize: "1.5rem" }}>

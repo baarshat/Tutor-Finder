@@ -63,7 +63,7 @@ const MessagingPage = () => {
 
   const [stompConnected, setStompConnected] = useState(false);
 
-  const messagesEndRef = useRef(null);
+  const chatContainerRef = useRef(null);
   const searchInputRef = useRef(null);
   const socketRef = useRef(null);
   const selectedChatRef = useRef(null);
@@ -328,7 +328,9 @@ const MessagingPage = () => {
 
   // Scroll to bottom of messages
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   }, [messages]);
 
   // Start chat with a searched tutor
@@ -604,7 +606,7 @@ const MessagingPage = () => {
             </div>
 
             {/* Messages */}
-            <div className="chat-messages">
+            <div className="chat-messages" ref={chatContainerRef}>
               {loadingChat ? (
                 <div className="chat-loading">Loading messages...</div>
               ) : messages.length === 0 ? (
@@ -628,7 +630,6 @@ const MessagingPage = () => {
                   </div>
                 ))
               )}
-              <div ref={messagesEndRef} />
             </div>
 
             {/* Message Input */}
