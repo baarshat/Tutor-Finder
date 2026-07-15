@@ -54,7 +54,7 @@ public class PaymentController {
             @RequestBody InitiatePaymentRequest request) {
 
         if (user == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not authenticated");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "User not authenticated"));
         }
 
         try {
@@ -91,7 +91,7 @@ public class PaymentController {
             paymentRepository.saveAndFlush(payment);
 
             // 4. Generate eSewa v2 signature
-            String totalAmountStr = String.format("%.0f", request.getAmount());
+            String totalAmountStr = String.valueOf(request.getAmount().intValue());
             String signatureData = "total_amount=" + totalAmountStr +
                     ",transaction_uuid=" + transactionUuid +
                     ",product_code=" + MERCHANT_CODE;
@@ -118,7 +118,7 @@ public class PaymentController {
 
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("Error initiating payment: " + e.getMessage());
+                    .body(Map.of("message", "Error initiating payment: " + e.getMessage()));
         }
     }
 
